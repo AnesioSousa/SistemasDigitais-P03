@@ -125,55 +125,45 @@ clear_background:
 
 .type set_background_block, %function
 set_background_block:
-    ldr r4, [sp, #0]
-    
-    sub sp, sp, #32
-    str r11, [sp, #28]
-    str r10, [sp, #24]
-    str r9, [sp, #20]
-    str r8, [sp, #16]
-    str r7, [sp, #12]
-    str r6, [sp, #8]  
+    ldr r4, [sp, #0] @pega o param R da pilha
+    sub sp, sp, #12
+    str r10, [sp, #8]
     str r5, [sp, #4]
 
     ldr r10, =mem_mapped_file_descriptor
     ldr r10, [r10]
-    
-    add r7, r10,  #0xc0 @ Carrega start_signal em r5
-    add r6, r10, #0x70 @ Carrega DATA_B_BASE em r4
-    add r5, r10, #0x80 @ Carrega DATA_A_BASE em r3
-    
-    @Calculo do endereco
-    mov r8, r0 
-    mov r9, r1
-    mov r11, #80
-    mul r8, r11, r8
-    add r8, r8, r9
-    lsl r8, #4
-    orr r8, #0b0010  @opcode
-    str r8, [r5] @escreve em data_A
-    
-    mov r8, r2
-    lsl r8, #3
-    orr r8, r3
-    lsl r8, #3
-    orr r8, r4
-    str r8, [r6] @escreve em data_B
 
-    mov r8, #0 
-    str r8, [r7] @escreve em start_signal
- 
-    mov r8, #1 
-    str r8, [r7] @escreve em start_signal
+check_write:
+    ldr r5, [r10, #0xb0] @pega wrfull
+    cmp r5, #1
+    beq check_write
+
+    @Calculo do endereco de onde vai ficar o bloco
+    mov r5, #80
+    mul r0, r5, r0 @r0 eh o param linha
+    add r0, r0, r1 @r1 eh o param coluna
+    lsl r0, #4
+    orr r0, #0b0010  @opcode
     
-    ldr r11, [sp, #28]
-    ldr r10, [sp, #24]
-    ldr r9, [sp, #20]   
-    ldr r8, [sp, #16]
-    ldr r7, [sp, #12]    
-    ldr r6, [sp, #8]
+    str r0, [r10, #0x80] @escreve em data_A
+    
+    mov r0, r2
+    lsl r0, #3
+    orr r0, r3
+    lsl r0, #3
+    orr r0, r4
+
+    str r0, [r10, #0x70] @escreve em data_B
+    
+    mov r0, #0
+    str r0, [r10, #0xc0] @escreve em start_signal
+  
+    mov r0, #1
+    str r0, [r10, #0xc0] @escreve em start_signal
+    
+    ldr r10, [sp, #8]
     ldr r5, [sp, #4]
-    add sp, sp, #32
+    add sp, sp, #12
 
     bx lr
 
@@ -192,14 +182,5 @@ error:
 fileName: .asciz "/dev/mem"
 failed: .ascii "Erro no mapeamento de memoria!!\n"
 fpga_bridge: .word 0xff200
-
 mem_mapped_file_descriptor: .space 4
 file_descriptor: .space 4
-
-start_signal: .word 0xc0
-DATA_A_BASE:                     .word 0x80
-DATA_B_BASE:                     .word 0x70
-RESET_PULSECOUNTER_BASE:         .word 0x90
-SCREEN_BASE:                     .word 0xa0
-WRFULL_BASE:                     .word 0xb0
-WRREG_BASE:                      .word 0xc0
