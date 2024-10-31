@@ -1,11 +1,11 @@
-#include <stdio.h>
 #include "gpu_lib.h"
+#include <stdio.h>
 
 int main() {
-  iniciar_tela();
+    iniciar_tela();
+    limpar_tela();
+    desenhar_tela_inicial();
 
-  desenhar_bloco(30, 30, 0, 7, 0);
-  limpar_tela();
-  desmapear_tela();
-  return 0;
+    desmapear_tela();
+    return 0;
 }

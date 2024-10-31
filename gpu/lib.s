@@ -94,7 +94,7 @@ clear_background:
     mov r1, #0b00000 @ coluna
     lsl r1, #4
     orr r1, #0b0000  @opcode
-    str r1, [r3]
+    str r1, [r3]++
 
     add r4, r0, #0x70 @ Carrega DATA_B_BASE em r4
     
