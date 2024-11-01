@@ -10,6 +10,7 @@
 .global mem_unmap
 .global set_background_block
 .global clear_background
+.global set_sprite
 
 .type mem_map, %function
 mem_map:
@@ -94,7 +95,7 @@ clear_background:
     mov r1, #0b00000 @ coluna
     lsl r1, #4
     orr r1, #0b0000  @opcode
-    str r1, [r3]++
+    str r1, [r3]
 
     add r4, r0, #0x70 @ Carrega DATA_B_BASE em r4
     
@@ -123,21 +124,37 @@ clear_background:
 
     bx lr
 
+
+check_write:
+    sub sp, sp, #8
+    str r5, [sp, #4]
+    str r10, [sp, #0]
+
+    ldr r10, =mem_mapped_file_descriptor
+    ldr r10, [r10]
+
+check:
+    ldr r5, [r10, #0xb0] @pega wrfull
+    cmp r5, #1
+    beq check
+    
+    ldr r5, [sp, #4]
+    ldr r10, [sp, #0]
+    add sp, sp, #8
+    
+    bx lr
+
+@ WBM
 .type set_background_block, %function
 set_background_block:
     ldr r4, [sp, #0] @pega o param R da pilha
     sub sp, sp, #12
     str r10, [sp, #8]
     str r5, [sp, #4]
-
+  
     ldr r10, =mem_mapped_file_descriptor
     ldr r10, [r10]
-
-check_write:
-    ldr r5, [r10, #0xb0] @pega wrfull
-    cmp r5, #1
-    beq check_write
-
+    
     @Calculo do endereco de onde vai ficar o bloco
     mov r5, #80
     mul r0, r5, r0 @r0 eh o param linha
@@ -155,6 +172,12 @@ check_write:
 
     str r0, [r10, #0x70] @escreve em data_B
     
+    sub sp, sp, #4
+    str lr, [sp, #0]
+    bl check_write
+    ldr lr, [sp, #0]
+    add sp, sp, #4
+
     mov r0, #0
     str r0, [r10, #0xc0] @escreve em start_signal
   
@@ -165,6 +188,52 @@ check_write:
     ldr r5, [sp, #4]
     add sp, sp, #12
 
+    bx lr
+
+.type set_sprite, %function
+set_sprite:
+    ldr r4, [sp, #0] @pega o param sp na pilha
+    sub sp, sp, #12
+    str r10, [sp, #8]
+    str r5, [sp, #4]
+     
+    ldr r10, =mem_mapped_file_descriptor
+    ldr r10, [r10]
+
+    @Montagem da parte da instrucao que vai para a data_A
+    lsl r0, #4
+    orr r0, #0b0000  @opcode
+    
+    str r0, [r10, #0x80] @escreve em data_A
+    
+    @Montagem da parte da instrucao que vai para a data_B
+    mov r0, r4
+    lsl r0, #10
+    orr r0, r1
+    lsl r0, #10
+    orr r0, r2
+    lsl r0, #9
+    orr r0, r3
+    str r0, [r10, #0x70] @escreve em data_B    
+    
+    sub sp, sp, #4
+    str lr, [sp, #0]
+    bl check_write
+    ldr lr, [sp, #0]
+    add sp, sp, #4
+
+    
+    mov r0, #0
+    str r0, [r10, #0xc0] @escreve em start_signal
+  
+    mov r0, #1
+    str r0, [r10, #0xc0] @escreve em start_signal
+    
+    
+    ldr r10, [sp, #8]
+    ldr r5, [sp, #4]
+    add sp, sp, #12
+  
     bx lr
 
 error:

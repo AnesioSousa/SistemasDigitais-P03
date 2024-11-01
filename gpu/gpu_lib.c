@@ -1,9 +1,15 @@
 #include "gpu_lib.h"
 
+#define LADO_QUADRADO 3
+#define offsett_X 0
+#define offsett_Y 0
 extern void mem_map();
 extern void set_background_block(uint32_t line, uint32_t col, uint32_t B, uint32_t G, uint32_t R);
+extern void set_sprite(uint32_t reg, uint32_t x, uint32_t y, uint32_t offset, uint32_t sp);
 extern void clear_background();
 extern void mem_unmap();
+void desenhar_quadrado(uint32_t line, uint32_t col, uint32_t B, uint32_t G, uint32_t R);
+void ler_matriz(int Max_linhas, int Max_colunas,char Matriz[Max_linhas][Max_colunas],int espacamento);
 
 void iniciar_tela() {
     mem_map();
@@ -16,11 +22,51 @@ void desmapear_tela() {
     mem_unmap();
 }
 
+
+void desenhar_sprite(uint32_t reg, uint32_t x, uint32_t y, uint32_t offset, uint32_t sp){
+  set_sprite(reg, x, y, offset, sp);
+}
+
+
+void desenhar_quadrado(uint32_t line, uint32_t col, uint32_t B, uint32_t G, uint32_t R){
+int i,j;    
+for ( i = 0; i < LADO_QUADRADO; i++)
+    {
+        for (j = 0; j < LADO_QUADRADO; j++)
+        {
+            set_background_block(line+i, col+j, B, G, R);
+        }
+        
+    }
+    
+}
+
+//espaçamento deve ser no minimo do tamanho do quadrado para evitar conflitos
+//planejo usar o lado do quadrado como parametro apos testes
+//os defines: lado quadrado e offsett X e Y podem ser parametros dessa função(obs:espacamento deve ser >= tamando do bloco)
+//caso a matriz ultrapasse o tamanho da placa podem ser usados offsetts ou mudar a relação lado_quadrado x espaçamento para uma proporção de 1x1 (de preferencia menor que uma matriz 80x60)
+void ler_matriz(int Max_linhas, int Max_colunas,char Matriz[Max_linhas][Max_colunas],int espacamento){
+int i,j;   
+ for (i = 0; i < Max_linhas; i++)
+        for (j = 0; j < Max_colunas; j++)
+        {
+            switch (Matriz[i][j])
+            {
+            case 1:
+                desenhar_quadrado(i*espacamento,(j*espacamento)+offsett_X,0,0,7);
+                break;
+            case 0:
+                desenhar_quadrado(i*espacamento,(j*espacamento)+offsett_Y,0,0,0);
+                break;
+            }
+    }
+}
+
 void desenhar_tela_inicial() {
     limpar_tela();
     desenhar_T_vermelho();
     desenhar_E_laranja();
-    desenhar_T();
+    desenhar_T_amarelo();
 }
 
 void desenhar_T_vermelho() {
