@@ -50,25 +50,28 @@ const Forma VetorDeFormas[7] = {
     {(char *[]){(char[]){1, 1}, (char[]){1, 1}}, 2},                                                        // formato quadrado
     {(char *[]){(char[]){0, 0, 0, 0}, (char[]){1, 1, 1, 1}, (char[]){0, 0, 0, 0}, (char[]){0, 0, 0, 0}}, 4} // formato vareta
 };
-
+int exec_in_terminal = TRUE;
 volatile sig_atomic_t stop;
 struct timeval before_now, now;
 int decrementar = 1000, pontuacao = 0, direcao;
 char Matriz[LINHAS][COLUNAS] = {0}, jogo_esta_rodando;
 Forma forma_atual;
 suseconds_t temporizador = 400000; // é só diminuir esse valor pro jogo executar mais rápido
-int16_t XYZ[3];
 
-int ACCEL = 1;
-int BUTTON = 1;
-int pausegame = 0;
-int endgame = 1;
-int iniciarjogo = 1;
-int fd;
-I2C_Registers regs;
-static int16_t X[1];
-void inicializacao_accel();
-void *accel_working(void *args);
+if(!exec_in_terminal){
+	int16_t XYZ[3];
+	int ACCEL = 1;
+	int BUTTON = 1;
+	int pausegame = 0;
+	int endgame = 1;
+	int iniciarjogo = 1;
+	int fd;
+	I2C_Registers regs;
+	static int16_t X[1];
+	void inicializacao_accel();
+	void *accel_working(void *args);
+}
+
 void *button_threads(void *args);
 
 int main() {
@@ -77,11 +80,14 @@ int main() {
 
     srand(time(0));
     gettimeofday(&before_now, NULL);
+	
+    pthread_t thread_button;
+    if(!exec_in_terminal){
+    	pthread_t thread_accel;
+	inicializacao_accel();
+	pthread_create(&thread_accel, NULL, accel_working, NULL);
+    }
 
-    pthread_t thread_accel, thread_button;
-
-    inicializacao_accel();
-    pthread_create(&thread_accel, NULL, accel_working, NULL);
     pthread_create(&thread_button, NULL, button_threads, NULL);
 
     GerarNovaFormaAleatoriamente();
