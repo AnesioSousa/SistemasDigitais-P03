@@ -8,23 +8,111 @@
 
 #include "acelerometro.c"
 #include "pthread.h"
+#include <fcntl.h>
 #include <signal.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <termios.h>
 #include <time.h>
 #include <unistd.h>
+
+struct termios orig_term_attr;
+
+void set_conio_terminal_mode() {
+    struct termios new_term_attr;
+    tcgetattr(STDIN_FILENO, &orig_term_attr); // get current terminal settings
+    new_term_attr = orig_term_attr;
+    new_term_attr.c_lflag &= ~(ICANON | ECHO);        // disable canonical mode and echo
+    tcsetattr(STDIN_FILENO, TCSANOW, &new_term_attr); // set new attributes
+}
+
+void reset_terminal_mode() {
+    tcsetattr(STDIN_FILENO, TCSANOW, &orig_term_attr); // reset to original attributes
+}
+
+int kbhit(void) {
+    struct termios oldt;
+    struct termios newt;
+    int ch;
+    int oldf;
+
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+    oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+    fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
+
+    ch = getchar();
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    fcntl(STDIN_FILENO, F_SETFL, oldf);
+
+    if (ch != EOF) {
+        ungetc(ch, stdin);
+        return 1; // key was hit
+    }
+
+    return 0; // no key was hit
+}
+
+void handle_input() {
+    if (kbhit()) {
+        char direcao = getchar(); // read the character directly
+        MovimentarForma(direcao); // call your movement function
+    }
+}
+
 #define LINHAS 20
 #define COLUNAS 15
 #define TRUE 1
 #define FALSE 0
+#define EXEC_IN_TERMINAL TRUE
 
-typedef struct
-{
+int16_t XYZ[3];
+int ACCEL = 1;
+int BUTTON = 1;
+int pausegame = 0;
+int endgame = 1;
+int iniciarjogo = 1;
+int fd;
+I2C_Registers regs;
+static int16_t X[1];
+static int direcao;
+volatile sig_atomic_t stop;
+
+int16_t *transform_xyz(int16_t *data, float mg_per_lsb) {
+    int i;
+    for (i = 0; i < 3; i++)
+        data[i] *= mg_per_lsb;
+    return data;
+}
+void inicializacao_accel() {
+    fd = open_fd();
+    regs = map_i2c(fd);
+    I2C0_Init(&regs);         // Estabelece a comunicação com o acelerômetro
+    accelerometer_init(regs); // Configura o acelerômetro
+}
+
+void *accel_working(void *args) {
+    while (ACCEL) {
+        if (accelereometer_isDataReady(regs)) {
+            accelerometer_x_read(X, regs); // lê os dados do eixo x
+        }
+        usleep(300000);
+    }
+    return NULL;
+}
+
+typedef struct {
     char **array;
     int largura, linha, coluna;
 } Forma;
 
 Forma CopiarForma(Forma forma);
+void update_screen(Forma temp);
 void MovimentarForma(int direcao);
 void ExibirTabela();
 void RemoverLinhaEAtualizarPontuacao();
@@ -35,11 +123,10 @@ void ApagarForma(Forma forma);
 int temQueAtualizar();
 void IniciarJogo();
 void RotacionarForma(Forma forma);
-
 void *input(void **args);
 void catchSIGINT(int signum);
-int16_t *transform_xyz(int16_t *data, float mg_per_lsb);
-
+void *button_threads(void *args);
+;
 /* Definição das peças */
 const Forma VetorDeFormas[7] = {
     {(char *[]){(char[]){0, 1, 1}, (char[]){1, 1, 0}, (char[]){0, 0, 0}}, 3},                               // formato S
@@ -50,42 +137,26 @@ const Forma VetorDeFormas[7] = {
     {(char *[]){(char[]){1, 1}, (char[]){1, 1}}, 2},                                                        // formato quadrado
     {(char *[]){(char[]){0, 0, 0, 0}, (char[]){1, 1, 1, 1}, (char[]){0, 0, 0, 0}, (char[]){0, 0, 0, 0}}, 4} // formato vareta
 };
-int exec_in_terminal = TRUE;
-volatile sig_atomic_t stop;
+
 struct timeval before_now, now;
-int decrementar = 1000, pontuacao = 0, direcao;
+int decrementar = 1000, pontuacao = 0;
 char Matriz[LINHAS][COLUNAS] = {0}, jogo_esta_rodando;
 Forma forma_atual;
 suseconds_t temporizador = 400000; // é só diminuir esse valor pro jogo executar mais rápido
 
-if(!exec_in_terminal){
-	int16_t XYZ[3];
-	int ACCEL = 1;
-	int BUTTON = 1;
-	int pausegame = 0;
-	int endgame = 1;
-	int iniciarjogo = 1;
-	int fd;
-	I2C_Registers regs;
-	static int16_t X[1];
-	void inicializacao_accel();
-	void *accel_working(void *args);
-}
-
-void *button_threads(void *args);
-
 int main() {
+    set_conio_terminal_mode();
     stop = 0;
     pontuacao = 0;
 
     srand(time(0));
     gettimeofday(&before_now, NULL);
-	
+
     pthread_t thread_button;
-    if(!exec_in_terminal){
-    	pthread_t thread_accel;
-	inicializacao_accel();
-	pthread_create(&thread_accel, NULL, accel_working, NULL);
+    if (!EXEC_IN_TERMINAL) {
+        pthread_t thread_accel;
+        inicializacao_accel();
+        pthread_create(&thread_accel, NULL, accel_working, NULL);
     }
 
     pthread_create(&thread_button, NULL, button_threads, NULL);
@@ -95,14 +166,17 @@ int main() {
     while (!stop) {
 
         // Se game over, alterar stop aqui
-
-        if (X[0] > 20) {
-            MovimentarForma('d');
-            usleep(300000);
-        } else if (X[0] < -20) {
-            MovimentarForma('a');
-            usleep(300000);
+        if (!EXEC_IN_TERMINAL) {
+            if (X[0] > 20) {
+                MovimentarForma('d');
+                usleep(300000);
+            } else if (X[0] < -20) {
+                MovimentarForma('a');
+                usleep(300000);
+            }
         }
+        handle_input();
+        usleep(100000);
 
         gettimeofday(&now, NULL);
         if (temQueAtualizar()) {
@@ -122,6 +196,12 @@ int main() {
 
     printf("\nGame over!\n");
     printf("\nPontuacao: %d\n", pontuacao);
+
+    if (!EXEC_IN_TERMINAL)
+        pthread_join(accel_working, NULL);
+
+    reset_terminal_mode();
+    return 0;
 }
 
 /*
@@ -176,10 +256,13 @@ void MovimentarForma(int direcao) {
             forma_atual.coluna--;
         break;
     }
+    update_screen(temp);
+}
+
+void update_screen(Forma temp) {
     ApagarForma(temp);
     ExibirTabela();
 }
-
 /*
  * Função responsável por exibir no terminal a matriz do game
  **/
@@ -198,7 +281,7 @@ void ExibirTabela() {
     printf("Tetris\n");
     for (i = 0; i < LINHAS; i++) {
         for (j = 0; j < COLUNAS; j++) {
-            printf("%c ", (Matriz[i][j] + Buffer[i][j]) ? '#' : '.');
+            printf("%c ", ((Matriz[i][j] + Buffer[i][j]) ? '#' : '.'));
         }
         printf("\n");
     }
@@ -311,30 +394,6 @@ void RotacionarForma(Forma forma) {
 void catchSIGINT(int signum) {
     printf("Unmapping\n");
     stop = 1;
-}
-
-int16_t *transform_xyz(int16_t *data, float mg_per_lsb) {
-    int i;
-    for (i = 0; i < 3; i++)
-        data[i] *= mg_per_lsb;
-    return data;
-}
-
-void inicializacao_accel() {
-    fd = open_fd();
-    regs = map_i2c(fd);
-    I2C0_Init(&regs);         // Estabelece a comunicação com o acelerômetro
-    accelerometer_init(regs); // Configura o acelerômetro
-}
-
-void *accel_working(void *args) {
-    while (ACCEL) {
-        if (accelereometer_isDataReady(regs)) {
-            accelerometer_x_read(X, regs); // lê os dados do eixo x
-        }
-        usleep(300000);
-    }
-    return NULL;
 }
 
 void *button_threads(void *args) {
