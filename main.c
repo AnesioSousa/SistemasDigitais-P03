@@ -6,6 +6,13 @@
  * Docente: Ângelo Duarte
  **/
 
+struct termios orig_term_attr;
+#define LINHAS 20
+#define COLUNAS 15
+#define TRUE 1
+#define FALSE 0
+#define EXEC_IN_TERMINAL TRUE
+
 #include "acelerometro.c"
 #include "pthread.h"
 #include <fcntl.h>
@@ -18,7 +25,17 @@
 #include <time.h>
 #include <unistd.h>
 
-struct termios orig_term_attr;
+int16_t XYZ[3];
+int ACCEL = 1;
+int BUTTON = 1;
+int pausegame = 0;
+int endgame = 1;
+int iniciarjogo = 1;
+int fd;
+I2C_Registers regs;
+static int16_t X[1];
+static int direcao;
+volatile sig_atomic_t stop;
 
 void set_conio_terminal_mode() {
     struct termios new_term_attr;
@@ -64,24 +81,6 @@ void handle_input() {
         MovimentarForma(direcao); // call your movement function
     }
 }
-
-#define LINHAS 20
-#define COLUNAS 15
-#define TRUE 1
-#define FALSE 0
-#define EXEC_IN_TERMINAL TRUE
-
-int16_t XYZ[3];
-int ACCEL = 1;
-int BUTTON = 1;
-int pausegame = 0;
-int endgame = 1;
-int iniciarjogo = 1;
-int fd;
-I2C_Registers regs;
-static int16_t X[1];
-static int direcao;
-volatile sig_atomic_t stop;
 
 int16_t *transform_xyz(int16_t *data, float mg_per_lsb) {
     int i;
@@ -166,6 +165,7 @@ int main() {
     while (!stop) {
 
         // Se game over, alterar stop aqui
+        // Se não estiver executando no terminal, estão tem que estar executando na placa.
         if (!EXEC_IN_TERMINAL) {
             if (X[0] > 20) {
                 MovimentarForma('d');
