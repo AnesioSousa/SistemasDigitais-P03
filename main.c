@@ -95,7 +95,7 @@ Forma forma_atual;
 suseconds_t temporizador = 400000; // é só diminuir esse valor pro jogo executar mais rápido
 
 int main() {
-    iniciar_tela();
+    mapear_gpu();
     limpar_tela();
     stop = 0;
     pontuacao = 123456;
@@ -160,7 +160,7 @@ int main() {
    // printf("\nPontuacao: %d\n", pontuacao);
     pthread_join(accel_working, NULL);
 	
-    desmapear_tela();
+    desmapear_gpu();
     return 0;
 }
 
@@ -371,6 +371,7 @@ void RotacionarForma(Forma forma) {
 
 void catchSIGINT(int signum) {
     printf("Unmapping\n");
+    desmapear_gpu();
     stop = 1;
 }
 
