@@ -2,11 +2,11 @@
 // Função para definir cada letra em uma submatriz 5x5
 
 void definirLetraP(char matriz[5][5]) {
-    matriz[0][0] = 1; matriz[0][1] = 1; matriz[0][2] = 1;matriz[0][3] = 1;       // Parte superior do "P"
+    matriz[0][0] = 1; matriz[0][1] = 1; matriz[0][2] = 1;matriz[0][3] = 1;matriz[0][4] = 0;     // Parte superior do "P"
     matriz[1][0] = 1;                 matriz[1][3] = 1;         // Lado direito do topo
     matriz[2][0] = 1; matriz[2][1] = 1; matriz[2][2] = 1;matriz[2][3] = 1;       // Centro do "P"
     matriz[3][0] = 1;                                         // Tronco
-    matriz[4][0] = 1;                                         // Tronco
+    matriz[4][0] = 1; matriz[4][4] = 0;                                         // Tronco
 };
 
 void definirLetraT(char matriz[5][5]) {
@@ -64,7 +64,7 @@ void definirLetraS(char matriz[5][5]) {
 void definirDoisPontos(char matriz[5][5]) {
     // Ponto superior dos dois pontos
     matriz[1][2] = 1; // Linha 2, coluna 3 (índice começa em 0)
-
+    matriz[0][2] = 0;
     // Ponto inferior dos dois pontos
     matriz[3][2] = 0; // Linha 4, coluna 3 (índice começa em 0)
     matriz[3][3] = 0; // Linha 4, coluna 3 (índice começa em 0)

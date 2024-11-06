@@ -12,17 +12,6 @@ extern int time_is_up();
 extern void reset_pulsecounter();
 extern void mem_unmap();
 
-/*             API                */
-void desenhar_quadrado(uint32_t line, uint32_t col, uint32_t B, uint32_t G, uint32_t R, int tamanho_quadrado);
-void escreverTetris(int corT,int corE,int corR,int corI,int corS,int posX, int posY,int tamanho);
-void escrever_Pts(int corT,int corS,int corP,int corDoisP,int posX, int posY,int tamanho);
-void exibirPontuacao(int pontuacao,int linhas,int colunas,char matriz[linhas][colunas]);
-void escrever_Borda(int linhas,int colunas,char matriz[linhas][colunas],int cor);
-void copiarMatriz(int linhas,int colunas,char matriz[linhas][colunas],char temp[linhas][colunas]);
-void mudarCor(int linhas, int colunas,char matriz[5][5],int cor);
-void ler_matriz(int Max_linhas, int Max_colunas,char Matriz[Max_linhas][Max_colunas],int espacamento,int off_X,int off_Y, int tamanho_quadrado);
-
-
 void mapear_gpu() {
     mem_map();
 }
@@ -185,85 +174,127 @@ void exibirPontuacao(int pontuacao,int linhas,int colunas,char matriz[linhas][co
 
     c = 0;    
     p = pontuacao;
-
-    /* extract each digit */
-    while (p != 0)
-    {
+    
+    if(p!=0){
+      /* extract each digit */
+      while (p != 0)
+      {
         numberArray[c] = p % 10;
         p /= 10;
         c++;
-    }
-    for ( i = 0; i < c; i++)
-    {   
+      }
+      for ( i = 0; i < c; i++)
+      {   
         char temp[5][5]= {0};
         switch (numberArray[i])
         {
-        case 0:
+          case 0:
             definirNumero0(temp);
             break;
-        case 1:
+          case 1:
             definirNumero1(temp);
             break;
-        case 2:
+          case 2:
             definirNumero2(temp);
             break;
-        case 3:
+          case 3:
             definirNumero3(temp);
             break;
-        case 4:
+          case 4:
             definirNumero4(temp);
             break;
-        case 5:
+          case 5:
             definirNumero5(temp);
             break;
-        case 6:
+          case 6:
             definirNumero6(temp);
             break;
-        case 7:
+          case 7:
             definirNumero7(temp);
             break;
-        case 8:
+          case 8:
             definirNumero8(temp);
             break;
-        case 9:
+          case 9:
             definirNumero9(temp);
             break;
         }
         switch (i+1)
         {
-        case 1:
+          case 1:
             copiarMatriz(5,5,digito1,temp);
             break;
-        case 2:
+          case 2:
             copiarMatriz(5,5,digito2,temp);
             break;
-        case 3:
+          case 3:
             copiarMatriz(5,5,digito3,temp);
             break;
-        case 4:
+          case 4:
             copiarMatriz(5,5,digito4,temp);
             break;
-        case 5:
+          case 5:
             copiarMatriz(5,5,digito5,temp);
             break;
-        case 6:
+          case 6:
             copiarMatriz(5,5,digito6,temp);
             break;
         }
-    }
-    for ( i = 0; i < 5; i++)
-    {
-       for (j = 0; j < 5; j++)
-       {
-        matriz[i][j] = digito6[i][j];
-        matriz[i][6 + j] = digito5[i][j];
-        matriz[i][12 + j] = digito4[i][j];
-        matriz[i][18 + j] = digito3[i][j];
-        matriz[i][24 + j] = digito2[i][j];
-        matriz[i][30 + j] = digito1[i][j];
-       }      
-    }
-    ler_matriz(linhas,colunas,matriz,1,30,54,1);
+      }
+      for ( i = 0; i < 5; i++)
+      {
+        for (j = 0; j < 5; j++)
+        {
+          matriz[i][j] = digito6[i][j];
+          matriz[i][6 + j] = digito5[i][j];
+          matriz[i][12 + j] = digito4[i][j];
+          matriz[i][18 + j] = digito3[i][j];
+          matriz[i][24 + j] = digito2[i][j];
+          matriz[i][30 + j] = digito1[i][j];
+        }      
+      }
+      ler_matriz(linhas,colunas,matriz,1,30,54,1);
+    }else{
+      for ( i = 0; i < 6; i++)
+      {   
+        char temp[5][5]= {0};
+        definirNumero0(temp);
+        switch (i+1)
+        {
+          case 1:
+            copiarMatriz(5,5,digito1,temp);
+            break;
+          case 2:
+            copiarMatriz(5,5,digito2,temp);
+            break;
+          case 3:
+            copiarMatriz(5,5,digito3,temp);
+            break;
+          case 4:
+            copiarMatriz(5,5,digito4,temp);
+            break;
+          case 5:
+            copiarMatriz(5,5,digito5,temp);
+            break;
+          case 6:
+            copiarMatriz(5,5,digito6,temp);
+            break;
+        }
+      }
+      for ( i = 0; i < 5; i++)
+      {
+        for (j = 0; j < 5; j++)
+        {
+          matriz[i][j] = digito6[i][j];
+          matriz[i][6 + j] = digito5[i][j];
+          matriz[i][12 + j] = digito4[i][j];
+          matriz[i][18 + j] = digito3[i][j];
+          matriz[i][24 + j] = digito2[i][j];
+          matriz[i][30 + j] = digito1[i][j];
+        }      
+      }
+      ler_matriz(linhas,colunas,matriz,1,30,54,1);
+}
 }
 
 void copiarMatriz(int linhas,int colunas,char matriz[linhas][colunas],char temp[linhas][colunas]){

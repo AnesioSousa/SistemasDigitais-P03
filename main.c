@@ -48,7 +48,7 @@ void *accel_working(void *args) {
         if (accelereometer_isDataReady(regs)) {
             accelerometer_x_read(X, regs); // lê os dados do eixo x
         }
-        usleep(300000);
+        //sleep(3);
     }
     return NULL;
 }
@@ -89,7 +89,7 @@ const Forma VetorDeFormas[7] = {
 struct timeval before_now, now;
 int decrementar = 1000, pontuacao = 0;
 char Matriz[LINHAS][COLUNAS] = {{0}};
-char pontuacao_Matriz[5][36], borda_Matriz[LINHAS+1][COLUNAS+1] = {0};
+char pontuacao_Matriz[5][36], borda_Matriz[LINHAS+1][COLUNAS+1] = {{0}};
 const int VetorDeCores[4] = {1,2,3,4};
 Forma forma_atual;
 suseconds_t temporizador = 400000; // é só diminuir esse valor pro jogo executar mais rápido
@@ -98,7 +98,8 @@ int main() {
     mapear_gpu();
     limpar_tela();
     stop = 0;
-    pontuacao = 123456;
+    pontuacao = 0;
+    
     srand(time(0));
     gettimeofday(&before_now, NULL);    
     //pthread_t thread_button;
@@ -109,7 +110,7 @@ int main() {
     
     escrever_Borda(LINHAS+1,COLUNAS+1,borda_Matriz,3);
     ler_matriz(LINHAS+1,COLUNAS+1,borda_Matriz,2,0,1,2);
-    //escrever_Pts(1,2,3,4,0,54,1);
+    escrever_Pts(1,2,3,4,0,54,1);
     exibirPontuacao(pontuacao,5,36,pontuacao_Matriz);
 
     GerarNovaFormaAleatoriamente();
@@ -130,7 +131,6 @@ int main() {
         }
       }
 
-
     for (i = 0; i < LINHAS; i++) {
         for (j = 0; j < COLUNAS; j++) {
           if(Buffer[i][j]!=0){
@@ -139,12 +139,6 @@ int main() {
       }
     }
 
-
-
-
-
-
-
     //ler_matriz(LINHAS,COLUNAS,Matriz,2,1,0,2);
     //ler_matriz(LINHAS+1,COLUNAS+1,borda_Matriz,2,0,1,2);
        //ler_matriz(LINHAS,COLUNAS,Buffer,2,1,0,2);       
@@ -152,12 +146,11 @@ int main() {
 	    ler_matriz(LINHAS,COLUNAS,matriz_aux,2,1,0,2);
         if (X[0] > 20) {
 		    MovimentarForma('d');
-		    usleep(300000);
+		    usleep(80000);
 	    } else if (X[0] < -20) {
 		    MovimentarForma('a');
-		    usleep(300000);
+		    usleep(80000);
 	    }
-	    usleep(100000);
 
         gettimeofday(&now, NULL);
         if (temQueAtualizar()) {
@@ -273,7 +266,8 @@ void RemoverLinhaEAtualizarPontuacao() {
     for (i = 0; i < LINHAS; i++) {
         soma = 0;
         for (j = 0; j < COLUNAS; j++)
-            soma += Matriz[i][j];
+            if(Matriz[i][j] != 0)            
+                soma++;
         if (soma == COLUNAS) {
             contagem++;
             int l, k;
@@ -285,7 +279,8 @@ void RemoverLinhaEAtualizarPontuacao() {
             temporizador -= decrementar--;
         }
     }
-    pontuacao += 100 * contagem;
+    pontuacao += 10000 * contagem;
+    exibirPontuacao(pontuacao,5,36,pontuacao_Matriz);
 }
 
 /*
@@ -311,6 +306,7 @@ void GerarNovaFormaAleatoriamente() {
     nova_forma.linha = 0;
     //comentar as 2 linhas abaixo e a função mudar cor array em caso de problema no teste
     
+    /* Tem que de alguma forma, mandar as cores randomizadas, pois não está colorindo corretamente quando pontua*/
     nova_forma.cor = VetorDeCores[rand()%4];
     mudarCorArray(nova_forma.largura,nova_forma.largura,nova_forma,nova_forma.cor);
     
