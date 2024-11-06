@@ -99,24 +99,23 @@ int main() {
     limpar_tela();
     stop = 0;
     pontuacao = 123456;
-    escrever_Borda(LINHAS+1,COLUNAS+1,borda_Matriz,3);
-    ler_matriz(LINHAS+1,COLUNAS+1,borda_Matriz,2,0,1,2);
-    //escrever_Pts(1,2,3,4,0,54,1);
-    exibirPontuacao(pontuacao,5,36,pontuacao_Matriz);
     srand(time(0));
-    gettimeofday(&before_now, NULL);
-
+    gettimeofday(&before_now, NULL);    
     //pthread_t thread_button;
     pthread_t thread_accel;
     inicializacao_accel();
     pthread_create(&thread_accel, NULL, accel_working, NULL);
-
     //pthread_create(&thread_button, NULL, button_threads, NULL);
+    
+    escrever_Borda(LINHAS+1,COLUNAS+1,borda_Matriz,3);
+    ler_matriz(LINHAS+1,COLUNAS+1,borda_Matriz,2,0,1,2);
+    //escrever_Pts(1,2,3,4,0,54,1);
+    exibirPontuacao(pontuacao,5,36,pontuacao_Matriz);
 
     GerarNovaFormaAleatoriamente();
-    //ExibirTabela();
     while (!stop) {
-	    char Buffer[LINHAS][COLUNAS] = {0};
+	    char Buffer[LINHAS][COLUNAS] = {{0}};
+
 	    int i, j;
 	    for (i = 0; i < forma_atual.largura; i++) {
 		    for (j = 0; j < forma_atual.largura; j++) {
@@ -129,9 +128,8 @@ int main() {
 	    //ler_matriz(LINHAS+1,COLUNAS+1,borda_Matriz,2,0,1,2);
 	    ler_matriz(LINHAS,COLUNAS,Buffer,2,1,0,2);
 	    ler_matriz(LINHAS,COLUNAS,Matriz,2,1,0,2);
-	    // Se game over, alterar stop aqui
-	    // Se não estiver executando no terminal, estão tem que estar executando na placa.
-	    if (X[0] > 20) {
+	    
+        if (X[0] > 20) {
 		    MovimentarForma('d');
 		    usleep(300000);
 	    } else if (X[0] < -20) {
@@ -159,7 +157,6 @@ int main() {
    // printf("\nGame over!\n");
    // printf("\nPontuacao: %d\n", pontuacao);
     pthread_join(accel_working, NULL);
-	
     desmapear_gpu();
     return 0;
 }
