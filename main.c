@@ -114,21 +114,25 @@ int main() {
 
     GerarNovaFormaAleatoriamente();
     while (!stop) {
-	    char Buffer[LINHAS][COLUNAS] = {{0}};
+	 //   char Buffer[LINHAS][COLUNAS] = {{0}};
 
-	    int i, j;
-	    for (i = 0; i < forma_atual.largura; i++) {
-		    for (j = 0; j < forma_atual.largura; j++) {
-			    if (forma_atual.array[i][j])
-				    Buffer[forma_atual.linha + i][forma_atual.coluna + j] = forma_atual.array[i][j];
-		    }
-	    }
+	  //  int i, j;
+	  // for (i = 0; i < forma_atual.largura; i++) {
+	//	    for (j = 0; j < forma_atual.largura; j++) {
+	//		    if (forma_atual.array[i][j])
+	//			    Buffer[forma_atual.linha + i][forma_atual.coluna + j] = forma_atual.array[i][j];
+	//	    }
+	  //  }
 
 	    //ler_matriz(LINHAS,COLUNAS,Matriz,2,1,0,2);
 	    //ler_matriz(LINHAS+1,COLUNAS+1,borda_Matriz,2,0,1,2);
-	    ler_matriz(LINHAS,COLUNAS,Buffer,2,1,0,2);
+	   // ler_matriz(LINHAS,COLUNAS,Buffer,2,1,0,2);
+       
+     
+        
+       
+       
 	    ler_matriz(LINHAS,COLUNAS,Matriz,2,1,0,2);
-	    
         if (X[0] > 20) {
 		    MovimentarForma('d');
 		    usleep(300000);

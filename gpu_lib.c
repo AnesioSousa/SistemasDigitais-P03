@@ -8,8 +8,9 @@ extern void mem_map();
 extern void set_background_block(uint32_t line, uint32_t col, uint32_t B, uint32_t G, uint32_t R);
 extern void set_sprite(uint32_t reg, uint32_t x, uint32_t y, uint32_t offset, uint32_t sp);
 extern void clear_background();
+extern int time_is_up();
+extern void reset_pulsecounter();
 extern void mem_unmap();
-
 
 /*             API                */
 void desenhar_quadrado(uint32_t line, uint32_t col, uint32_t B, uint32_t G, uint32_t R, int tamanho_quadrado);
@@ -304,3 +305,10 @@ void limpar_tela() {
         }
     }
 }
+
+int renderizou(){
+    return time_is_up();
+} 
+
+void renderizar_por_mais_tempo(){
+    return reset_pulsecounter();

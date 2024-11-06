@@ -13,4 +13,6 @@ void desenhar_tela_inicial();
 void desenhar_T_vermelho();
 void desenhar_E_laranja();
 void desenhar_T_amarelo();
+int time_is_up();
+void reset_pulsecounter();
 #endif

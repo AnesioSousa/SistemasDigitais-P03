@@ -11,6 +11,7 @@
 .global set_background_block
 .global clear_background
 .global set_sprite
+.global time_is_up
 
 .type mem_map, %function
 mem_map:
@@ -236,16 +237,49 @@ set_sprite:
   
     bx lr
 
-error:
-  mov r0, #1
-  ldr r1, =failed
-  mov r2, #7
-  mov r7, #1
-  svc 0
+.type time_is_up, % function
+time_is_up:
+    sub sp, sp, #4
+    str r10, [sp, #0]
+    
+    ldr r10,=mem_mapped_file_descriptor
+    ldr r10, [r10]
+    
+    ldr r0, [r10, #0xa0]
 
-	mov r7, #1
-	mov r0, #1
-	svc 0
+    ldr r10, [sp, #0]
+    add sp, sp, #4
+
+    bx lr
+
+.type reset_pulsecounter, % function
+reset_pulsecounter:
+    sub sp, sp, #4
+    str r10, [sp, #0]
+    
+    ldr r10,=mem_mapped_file_descriptor
+    ldr r10, [r10]
+    
+    mov r0, #1
+    str r0, [r10, #0x90]
+
+    ldr r10, [sp, #0]
+    add sp, sp, #4
+    
+    bx lr
+
+error:
+    mov r0, #1
+    ldr r1, =failed
+    mov r2, #7
+    mov r7, #1
+    svc 0
+
+    mov r7, #1
+    mov r0, #1
+    svc 0
+
+
 
 .data
 fileName: .asciz "/dev/mem"
