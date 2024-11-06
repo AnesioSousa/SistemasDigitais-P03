@@ -114,25 +114,42 @@ int main() {
 
     GerarNovaFormaAleatoriamente();
     while (!stop) {
-	 //   char Buffer[LINHAS][COLUNAS] = {{0}};
+      char Buffer[LINHAS][COLUNAS] = {{0}};
+      char matriz_aux[LINHAS][COLUNAS] = {{0}};
+      int i, j;
 
-	  //  int i, j;
-	  // for (i = 0; i < forma_atual.largura; i++) {
-	//	    for (j = 0; j < forma_atual.largura; j++) {
-	//		    if (forma_atual.array[i][j])
-	//			    Buffer[forma_atual.linha + i][forma_atual.coluna + j] = forma_atual.array[i][j];
-	//	    }
-	  //  }
+      for (i = 0; i < LINHAS; i++) {
+        for (j = 0; j < COLUNAS; j++) {
+          matriz_aux[i][j] = Matriz[i][j];
+        }
+      }
+      for (i = 0; i < forma_atual.largura; i++) {
+        for (j = 0; j < forma_atual.largura; j++) {
+          if (forma_atual.array[i][j])
+            Buffer[forma_atual.linha + i][forma_atual.coluna + j] = forma_atual.array[i][j];
+        }
+      }
 
-	    //ler_matriz(LINHAS,COLUNAS,Matriz,2,1,0,2);
-	    //ler_matriz(LINHAS+1,COLUNAS+1,borda_Matriz,2,0,1,2);
-	   // ler_matriz(LINHAS,COLUNAS,Buffer,2,1,0,2);
-       
-     
-        
-       
-       
-	    ler_matriz(LINHAS,COLUNAS,Matriz,2,1,0,2);
+
+    for (i = 0; i < LINHAS; i++) {
+        for (j = 0; j < COLUNAS; j++) {
+          if(Buffer[i][j]!=0){
+           matriz_aux[i][j] = Buffer[i][j];
+        }
+      }
+    }
+
+
+
+
+
+
+
+    //ler_matriz(LINHAS,COLUNAS,Matriz,2,1,0,2);
+    //ler_matriz(LINHAS+1,COLUNAS+1,borda_Matriz,2,0,1,2);
+       //ler_matriz(LINHAS,COLUNAS,Buffer,2,1,0,2);       
+
+	    ler_matriz(LINHAS,COLUNAS,matriz_aux,2,1,0,2);
         if (X[0] > 20) {
 		    MovimentarForma('d');
 		    usleep(300000);
@@ -282,6 +299,7 @@ void SobrescreverMatriz() {
                 Matriz[forma_atual.linha + i][forma_atual.coluna + j] = forma_atual.array[i][j];
         }
     }
+  //  ler_matriz(LINHAS,COLUNAS,Matriz,2,1,0,2);
 }
 
 /*
@@ -292,17 +310,17 @@ void GerarNovaFormaAleatoriamente() {
     nova_forma.coluna = rand() % (COLUNAS - nova_forma.largura + 1);
     nova_forma.linha = 0;
     //comentar as 2 linhas abaixo e a função mudar cor array em caso de problema no teste
-    /*
+    
     nova_forma.cor = VetorDeCores[rand()%4];
     mudarCorArray(nova_forma.largura,nova_forma.largura,nova_forma,nova_forma.cor);
-    */
+    
     ApagarForma(forma_atual);
     forma_atual = nova_forma;
     if (!ChecarPosicao(forma_atual)) {
         stop = TRUE;
     }
 }
-/*
+
 void mudarCorArray(int linhas, int colunas,Forma forma,int cor){
     int i,j;
     for ( i = 0; i < linhas; i++)
@@ -316,7 +334,7 @@ void mudarCorArray(int linhas, int colunas,Forma forma,int cor){
         }    
     } 
 }
-*/
+
 /*
  * Função responsável por verificar a posicao de uma forma
  * @param forma - Peça a ser apagada

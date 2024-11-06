@@ -312,3 +312,4 @@ int renderizou(){
 
 void renderizar_por_mais_tempo(){
     return reset_pulsecounter();
+}

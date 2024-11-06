@@ -12,6 +12,7 @@
 .global clear_background
 .global set_sprite
 .global time_is_up
+.global reset_pulsecounter
 
 .type mem_map, %function
 mem_map:
