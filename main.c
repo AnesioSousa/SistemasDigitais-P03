@@ -78,7 +78,6 @@ void ApagarForma(Forma forma);
 int temQueAtualizar();
 void IniciarJogo();
 void RotacionarForma(Forma forma);
-void *input(void **args);
 void catchSIGINT(int signum);
 void *button_threads(void *args);
 
@@ -105,20 +104,21 @@ int opcao;
 
 int main(){
 	mapear_gpu();
-	limpar_tela();  
+	
 	stop = 0;
-	pontuacao = 0;
 	opcao = 0;	
 	srand(time(0));
 	gettimeofday(&before_now, NULL);
-
+	inicializacao_accel();
+	
 	pthread_t thread_button;
 	pthread_t thread_accel;
-	inicializacao_accel();
 	pthread_create(&thread_accel, NULL, accel_working, NULL);
 	pthread_create(&thread_button, NULL, button_threads, NULL);
 
 	do{
+		pontuacao = 0;
+		limpar_tela();
 		escreverTetris(rand()%7,rand()%7,rand()%7,rand()%7,rand()%7, 4, 20, 2);
 		scanf("%d", &opcao);
 		if(opcao == 1){
@@ -134,30 +134,26 @@ int main(){
 				char matriz_aux[LINHAS][COLUNAS] = {{0}};
 				int i, j;
 
-				for (i = 0; i < LINHAS; i++) {
-					for (j = 0; j < COLUNAS; j++) {
+				for (i = 0; i < LINHAS; i++) 
+					for (j = 0; j < COLUNAS; j++) 
 						matriz_aux[i][j] = Matriz[i][j];
-					}
-				}
-				for (i = 0; i < forma_atual.largura; i++) {
-					for (j = 0; j < forma_atual.largura; j++) {
+					
+				
+				
+				for (i = 0; i < forma_atual.largura; i++) 
+					for (j = 0; j < forma_atual.largura; j++) 
 						if (forma_atual.array[i][j])
 							Buffer[forma_atual.linha + i][forma_atual.coluna + j] = forma_atual.array[i][j];
-					}
-				}
+					
+				
 
-				for (i = 0; i < LINHAS; i++) {
-					for (j = 0; j < COLUNAS; j++) {
-						if(Buffer[i][j]!=0){
+				for (i = 0; i < LINHAS; i++) 
+					for (j = 0; j < COLUNAS; j++) 
+						if(Buffer[i][j]!=0)
 							matriz_aux[i][j] = Buffer[i][j];
-						}
-					}
-				}
+			
 
-				//ler_matriz(LINHAS,COLUNAS,Matriz,2,1,0,2);
-				//ler_matriz(LINHAS+1,COLUNAS+1,borda_Matriz,2,0,1,2);
-				//ler_matriz(LINHAS,COLUNAS,Buffer,2,1,0,2);       
-
+				
 				ler_matriz(LINHAS,COLUNAS,matriz_aux,2,1,0,2);
 				if (X[0] > 20) {
 					MovimentarForma('d');
@@ -177,10 +173,9 @@ int main(){
 			ApagarForma(forma_atual);
 			limpar_tela();
 			draw_game_over_screen();
-			sleep(3);
+			usleep(100000);
 			strcpy(jogadores[0].nome, "ANE");			
 			jogadores[0].pontuacao = pontuacao;
-			pontuacao = 0;
 		}
 	}while(opcao != 0);
 
