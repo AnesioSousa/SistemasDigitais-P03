@@ -74,7 +74,7 @@ void RotacionarForma(Forma forma);
 void *input(void **args);
 void catchSIGINT(int signum);
 void *button_threads(void *args);
-;
+void *run_game(void *arg);
 /* Definição das peças */
 const Forma VetorDeFormas[7] = {
     {(char *[]){(char[]){0, 1, 1}, (char[]){1, 1, 0}, (char[]){0, 0, 0}}, 3},                               // formato S
@@ -92,23 +92,45 @@ char Matriz[LINHAS][COLUNAS] = {{0}};
 char pontuacao_Matriz[5][36], borda_Matriz[LINHAS+1][COLUNAS+1] = {{0}};
 const int VetorDeCores[4] = {1,2,3,4};
 Forma forma_atual;
-suseconds_t temporizador = 400000; // é só diminuir esse valor pro jogo executar mais rápido
+suseconds_t temporizador = 40000; // é só diminuir esse valor pro jogo executar mais rápido
 
-int main() {
-    mapear_gpu();
+int main(){
+  mapear_gpu();
+  pthread_t game;
+  int opcao;
+  void *status;
+
+
+  do{
     limpar_tela();
+    escreverTetris(rand()%7,rand()%7,rand()%7,rand()%7,rand()%7, 4, 20, 2);
+    scanf("%d", &opcao);
+    if(opcao == 1){
+      pthread_create(&game, NULL, run_game, NULL);
+    }
+    pthread_join(game, &status);
+    sleep(3);
+  }while(opcao != 0);
+
+
+  desmapear_gpu();
+}
+
+
+void *run_game(void *arg) {
+    limpar_tela();  
     stop = 0;
     pontuacao = 0;
-    
+
     srand(time(0));
     gettimeofday(&before_now, NULL);    
-    //pthread_t thread_button;
+    pthread_t thread_button;
     pthread_t thread_accel;
     inicializacao_accel();
     pthread_create(&thread_accel, NULL, accel_working, NULL);
-    //pthread_create(&thread_button, NULL, button_threads, NULL);
+    pthread_create(&thread_button, NULL, button_threads, NULL);
     
-    escrever_Borda(LINHAS+1,COLUNAS+1,borda_Matriz,3);
+    escrever_Borda(LINHAS,COLUNAS+1,borda_Matriz,3);
     ler_matriz(LINHAS+1,COLUNAS+1,borda_Matriz,2,0,1,2);
     escrever_Pts(1,2,3,4,0,54,1);
     exibirPontuacao(pontuacao,5,36,pontuacao_Matriz);
@@ -160,19 +182,10 @@ int main() {
     }
 
     ApagarForma(forma_atual);
-    int i, j;
-    /*for (i = 0; i < LINHAS; i++) {
-        for (j = 0; j < COLUNAS; j++) {
-            printf("%c ", Matriz[i][j] ? '#' : '.');
-        }
-        printf("\n");
-    }*/
-
-   // printf("\nGame over!\n");
-   // printf("\nPontuacao: %d\n", pontuacao);
+    limpar_tela();
+    draw_game_over_screen();
     pthread_join(accel_working, NULL);
-    desmapear_gpu();
-    return 0;
+    pthread_exit(0);
 }
 
 /*
@@ -391,7 +404,7 @@ void catchSIGINT(int signum) {
 }
 
 void *button_threads(void *args) {
-    /*KEY_open();
+    KEY_open();
     while(BUTTON){
         int teste;
         KEY_read(&teste);
@@ -412,6 +425,6 @@ void *button_threads(void *args) {
                 break;
         }
     }
-    KEY_close();*/
+    KEY_close();
     return NULL;
 }

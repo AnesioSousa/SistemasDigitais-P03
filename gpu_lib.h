@@ -14,6 +14,8 @@ int time_is_up();
 void reset_pulsecounter();
 
 
+void draw_game_over_screen();
+void escreverTetris(int corT,int corE,int corR,int corI,int corS,int posX, int posY,int tamanho);
 void desenhar_tela_inicial();
 void desenhar_T_vermelho();
 void desenhar_E_laranja();
