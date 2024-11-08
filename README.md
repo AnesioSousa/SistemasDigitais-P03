@@ -47,13 +47,21 @@ I2C0USEFPGA (offset: 0x1C1): Este registrador é configurado para "0".
 Esses registradores são manipulados para inicializar e controlar a comunicação com o acelerômetro ADXL345. Os seguintes registradores são acessados, utilizando seus respectivos offsets:
 <br>
 **I2C_CON (0x0):** Define o modo de operação do I2C.
+<br>
 **I2C_TAR (0x4):** Define o endereço do dispositivo I2C de destino.
+<br>
 **I2C_DATA_CMD (0x10):** Envia e recebe dados.
+<br>
 **IC_FS_SCL_HCNT (0x1C) e IC_FS_SCL_LCNT (0x20):** Ajustam os tempos de sinal SCL.
+<br>
 **IC_CLR_INTR (0x40):** Limpa interrupções.
+<br>
 **IC_ENABLE (0x6C):** Habilita o módulo I2C.
+<br>
 **IC_TXFLR (0x74) e IC_RXFLR (0x78):** Indicam o nível dos buffers de transmissão/recepção.
+<br>
 **IC_ENABLE_STATUS (0x9C):** Indica o status de habilitação do controlador.
+<br>
 
 # Desenvolvimento
 O projeto foi dividido em módulos para um melhor desenvolvimento. Sendo os modulo um com jogo Tetris, acelerômetro, biblioteca em assembly e algumas funções extras.
