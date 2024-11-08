@@ -22,13 +22,6 @@ O HPS contém um processador ARM Cortex A9 dual-core, encarregado de executar o 
 
 O sistema operacional utilizado é o Linux, e o desenvolvimento de software foi realizado com o uso das linguagens C e assembly, utilizando um editor de código que permite trabalhar com várias linguagens.
 
-# Compilar e executar o game
-Para rodar o game basta fazer o download do repositório e com um terminal aberto na pasta "app" executar o seguinte comando:
-```
-$ make
-```
-<h3> ⚠ Atenção! O sistema também depende da instalação prévia da biblioteca IntelFPGAUP!</h31>
-
 # Mapeamento de Memoria 
 Para possibilitar o acesso ao acelerômetro (ADXL345) presente na placa DE1-SOC, é necessário mapear a memória física para o espaço de endereçamento virtual. Esse processo envolve duas etapas principais.
 
@@ -93,12 +86,22 @@ Esse é o módulo com a biblioteca assembly. Contendo um conjunto de funções p
 - **time_is_up:** Lê uma posição de memória específica para verificar se o tempo para uma determinada operação expirou.
 - **reset_pulsecounter:** Reseta um contador de pulsos na FPGA, enviando um comando apropriado para o hardware.
 
+# Compilar e executar o game
+Para rodar o game basta fazer o download do repositório e com um terminal aberto na pasta "app" executar o seguinte comando:
+```
+$ make
+```
+<h3> ⚠ Atenção! O sistema também depende da instalação prévia da biblioteca IntelFPGAUP!</h31>
+
 # Controles da placa 
 - Botão 1: Inicia o jogo.
 - Botão 2: Pausa o jogo. (Para sair de pausa basta aperta qualquer botão)
 - Botão 3: Finaliza o jogo.
 - Botão 4: Rotaciona a peça.
 - Ao rotacionar a placa para direita ou esquerda ira mover a peça.
+
+# Conclusão
+Para a realização deste projeto, foi fundamental aplicar conhecimentos de interação entre hardware e software para desenvolver um jogo funcional. A compreensão dos princípios da arquitetura da DE1-SoC, do mapeamento de memória, da programação em assembly e em C, bem como o uso da interface de comunicação I2C, da saída de vídeo VGA e de periféricos como botões, foram essenciais para integrar esses elementos. Ao final, o projeto atingiu os objetivos estabelecidos, proporcionando uma experiência de jogo completa e promovendo o aperfeiçoamento no uso de mapeamento de memória e na programação em assembly. Trabalhar com uma linguagem de baixo nível como assembly trouxe uma nova visão para o desenvolvimento de código, resultando em melhorias no desenvolvimento de software em geral.
 
 
 
