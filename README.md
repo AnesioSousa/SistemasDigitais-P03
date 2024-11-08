@@ -82,16 +82,23 @@ Nesse módulo é feita chamadas ao assembly para manipular diretamente a GPU, re
 
 ## lib.s
 Esse é o módulo com a biblioteca assembly. Contendo um conjunto de funções para realizar operações de mapeamento de memória, manipulando diretamente o espaço de memória e realizando instruções específicas de controle. 
-### Funções principais:
-- mem_map: Abre o arquivo de dispositivo /dev/mem e mapeia uma região de memória para acesso ao FPGA. Armazena o descritor de arquivo para operações futuras.
-- mem_unmap: Desmapeia a região de memória previamente mapeada, liberando o espaço.
-- button: Lê o estado de um botão conectado à FPGA através da memória mapeada.
-- clear_background: Limpa o fundo, enviando instruções para a FPGA que redefinem o estado de memória relacionado ao fundo.
-- set_background_block: Define um bloco de fundo específico em uma posição (linha e coluna) usando parâmetros recebidos, ajustando o estado de memória da FPGA.
-- set_sprite: Define um sprite específico em uma posição, configurando detalhes como localização e opcode.
-- time_is_up: Lê uma posição de memória específica para verificar se o tempo para uma determinada operação expirou.
-- reset_pulsecounter: Reseta um contador de pulsos na FPGA, enviando um comando apropriado para o hardware.
 
+### Funções principais:
+- **mem_map:** Abre o arquivo de dispositivo /dev/mem e mapeia uma região de memória para acesso ao FPGA. Armazena o descritor de arquivo para operações futuras.
+- **mem_unmap:** Desmapeia a região de memória previamente mapeada, liberando o espaço.
+- **button:** Lê o estado de um botão conectado à FPGA através da memória mapeada.
+- **clear_background:** Limpa o fundo, enviando instruções para a FPGA que redefinem o estado de memória relacionado ao fundo.
+- **set_background_block:** Define um bloco de fundo específico em uma posição (linha e coluna) usando parâmetros recebidos, ajustando o estado de memória da FPGA.
+- **set_sprite:** Define um sprite específico em uma posição, configurando detalhes como localização e opcode.
+- **time_is_up:** Lê uma posição de memória específica para verificar se o tempo para uma determinada operação expirou.
+- **reset_pulsecounter:** Reseta um contador de pulsos na FPGA, enviando um comando apropriado para o hardware.
+
+# Controles da placa 
+- Botão 1: Inicia o jogo.
+- Botão 2: Pausa o jogo. (Para sair de pausa basta aperta qualquer botão)
+- Botão 3: Finaliza o jogo.
+- Botão 4: Rotaciona a peça.
+- Ao rotacionar a placa para direita ou esquerda ira mover a peça.
 
 
 
@@ -107,3 +114,5 @@ Esse é o módulo com a biblioteca assembly. Contendo um conjunto de funções p
 NAJIBGHADRI. Disponivel em: <https://github.com/najibghadri/Tetris200lines/tree/master>. Acesso em: 03/09/2024
 <br>
 VIMFULDANG. Disponivel em: <https://github.com/VimfulDang/ADXL345-Accelerometer-DE1-SOC>. Acesso em: 20/09/2024
+<br>
+
