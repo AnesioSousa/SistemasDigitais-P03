@@ -45,7 +45,8 @@ I2C0USEFPGA (offset: 0x1C1): Este registrador é configurado para "0".
 
 # Configuração do I2C0
 Esses registradores são manipulados para inicializar e controlar a comunicação com o acelerômetro ADXL345. Os seguintes registradores são acessados, utilizando seus respectivos offsets:
-**I2C_CON** - Offset: 0x0
+<br>
+**I2C_CON** - Offset: 0x0 <br>
               Função:
 # Desenvolvimento
 O projeto foi dividido em módulos para um melhor desenvolvimento. Sendo os modulo um com jogo Tetris, acelerômetro, biblioteca em assembly e algumas funções extras.
