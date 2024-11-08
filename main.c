@@ -10,7 +10,6 @@
 #define COLUNAS 15
 #define TRUE 1
 #define FALSE 0
-#define EXEC_IN_TERMINAL TRUE
 
 #include "acelerometro.c"
 #include "gpu_lib.h"
@@ -26,83 +25,98 @@
 #include <time.h>
 #include <unistd.h>
 
-int LISTEN_BTN = 1;
-int ACCEL = 1, BUTTON = 0;
-int pause_game = 0;
-int fd;
-I2C_Registers regs;
-static int16_t X[1];
-static int direcao;
-volatile sig_atomic_t stop;
-
-void inicializacao_accel() {
-    fd = open_fd();
-    regs = map_i2c(fd);
-    I2C0_Init(&regs);         // Estabelece a comunicação com o acelerômetro
-    accelerometer_init(regs); // Configura o acelerômetro
-}
-
-void *accel_working(void *args) {
-    while (ACCEL) {
-        if (accelereometer_isDataReady(regs)) {
-            accelerometer_x_read(X, regs); // lê os dados do eixo x
-        }
-        // sleep(3);
-    }
-    return NULL;
-}
-
 typedef struct {
     char **array;
     int largura, linha, coluna;
     int cor;
 } Forma;
 
+const int VetorDeCores[4] = {1, 2, 3, 4};
+int fd, decrementar = 1000, pontuacao, pause_game = 0, LISTEN_BTN = 1, ACCEL = 1, BUTTON = 0;
+static int16_t X[1];
+volatile sig_atomic_t stop;
+struct timeval before_now, now;
+char pontuacao_Matriz[5][36], Matriz[LINHAS][COLUNAS], borda_Matriz[LINHAS + 1][COLUNAS + 1] = {{0}};
+I2C_Registers regs;
+Forma forma_atual;
+suseconds_t temporizador = 400000; // é só diminuir esse valor pro jogo executar mais rápido
+
 Forma CopiarForma(Forma forma);
 void MovimentarForma(int direcao);
-void ExibirTabela();
 void RemoverLinhaEAtualizarPontuacao();
 void SobrescreverMatriz();
 void GerarNovaFormaAleatoriamente();
 int ChecarPosicao(Forma forma);
 void ApagarForma(Forma forma);
 int temQueAtualizar();
-void IniciarJogo();
 void RotacionarForma(Forma forma);
 void catchSIGINT(int signum);
 void *button_threads(void *args);
+void inicializacao_accel();
+void *accel_working(void *args);
+void limpar_matriz();
+void pausar_game();
+void rotacionar();
 
 /* Definição das peças */
 const Forma VetorDeFormas[7] = {
-    {(char *[]){(char[]){0, 1, 1}, (char[]){1, 1, 0}, (char[]){0, 0, 0}}, 3},                               // formato S
-    {(char *[]){(char[]){1, 1, 0}, (char[]){0, 1, 1}, (char[]){0, 0, 0}}, 3},                               // formato Z
-    {(char *[]){(char[]){0, 1, 0}, (char[]){1, 1, 1}, (char[]){0, 0, 0}}, 3},                               // formato T
-    {(char *[]){(char[]){0, 0, 1}, (char[]){1, 1, 1}, (char[]){0, 0, 0}}, 3},                               // formato L
-    {(char *[]){(char[]){1, 0, 0}, (char[]){1, 1, 1}, (char[]){0, 0, 0}}, 3},                               // formato L invertido
-    {(char *[]){(char[]){1, 1}, (char[]){1, 1}}, 2},                                                        // formato quadrado
-    {(char *[]){(char[]){0, 0, 0, 0}, (char[]){1, 1, 1, 1}, (char[]){0, 0, 0, 0}, (char[]){0, 0, 0, 0}}, 4} // formato vareta
-};
-
-struct timeval before_now, now;
-int decrementar = 1000, pontuacao = 0;
-char Matriz[LINHAS][COLUNAS];
-char pontuacao_Matriz[5][36], borda_Matriz[LINHAS + 1][COLUNAS + 1] = {{0}};
-const int VetorDeCores[4] = {1, 2, 3, 4};
-Forma forma_atual;
-suseconds_t temporizador = 400000; // é só diminuir esse valor pro jogo executar mais rápido
+    {// formato S
+     (char *[]){
+         (char[]){0, 1, 1},
+         (char[]){1, 1, 0},
+         (char[]){0, 0, 0}},
+     3}, // formato Z
+    {
+        (char *[]){
+            (char[]){1, 1, 0},
+            (char[]){0, 1, 1},
+            (char[]){0, 0, 0}},
+        3}, // formato T
+    {
+        (char *[]){
+            (char[]){0, 1, 0},
+            (char[]){1, 1, 1},
+            (char[]){0, 0, 0}},
+        3}, // formato L
+    {
+        (char *[]){
+            (char[]){0, 0, 1},
+            (char[]){1, 1, 1},
+            (char[]){0, 0, 0}},
+        3}, // formato L invertido
+    {
+        (char *[]){
+            (char[]){1, 0, 0},
+            (char[]){1, 1, 1},
+            (char[]){0, 0, 0}},
+        3}, // formato quadrado
+    {
+        (char *[]){
+            (char[]){1, 1},
+            (char[]){1, 1}},
+        2}, // formato vareta
+    {
+        (char *[]){
+            (char[]){0, 0, 0, 0},
+            (char[]){1, 1, 1, 1},
+            (char[]){0, 0, 0, 0},
+            (char[]){0, 0, 0, 0}},
+        4}};
 
 int main() {
     int i, j;
+    pthread_t thread_button;
+    pthread_t thread_accel;
+
     srand(time(0));
     gettimeofday(&before_now, NULL);
 
     mapear_gpu();
     inicializacao_accel();
 
-    pthread_t thread_button;
-    pthread_t thread_accel;
     pthread_create(&thread_accel, NULL, accel_working, NULL);
     pthread_create(&thread_button, NULL, button_threads, NULL);
+
     limpar_tela();
     escreverTetris(1, 6, 5, 4, 3, 4, 10, 2);
     escreverPressionePB(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 30, 1);
@@ -180,6 +194,20 @@ int main() {
     return 0;
 }
 
+void inicializacao_accel() {
+    fd = open_fd();
+    regs = map_i2c(fd);
+    I2C0_Init(&regs);         // Estabelece a comunicação com o acelerômetro
+    accelerometer_init(regs); // Configura o acelerômetro
+}
+
+void *accel_working(void *args) {
+    while (ACCEL)
+        if (accelereometer_isDataReady(regs))
+            accelerometer_x_read(X, regs); // lê os dados do eixo x
+    return NULL;
+}
+
 void pausar_game() {
     while (1) { // pausa o jogo
         pause_game = 1;
@@ -197,7 +225,7 @@ void pausar_game() {
     }
 }
 
-void limpar_tela() {
+void limpar_matriz() {
     int i, j;
 
     for (i = 0; i < LINHAS; i++)
