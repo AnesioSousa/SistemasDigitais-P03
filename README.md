@@ -28,10 +28,25 @@ $ make
 # Mapeamento de Memoria 
 Para possibilitar o acesso ao acelerômetro (ADXL345) presente na placa DE1-SOC, é necessário mapear a memória física para o espaço de endereçamento virtual. Esse processo envolve duas etapas principais.
 
-## dev/men
+## Acesso ao dev/men
+O arquivo especial /dev/mem, em sistemas Linux, permite interação direta com o hardware, contornando as proteções do kernel. Para acessá-lo, são concedidas permissões de leitura e escrita, além de garantir sincronização de I/O.
 
-## 
+## Mapeamento da Memória
+Após a abertura do arquivo, o próximo passo é mapear os endereços do System Manager (SYSMGR) e do controlador I2C0. Durante esse processo, define-se o endereço base, que marca o ponto de partida na memória física, e o tamanho da área a ser mapeada (span), indicando a extensão da memória a ser acessada. O sistema operacional atribui um endereço virtual à área mapeada, permitindo leitura e escrita. O compartilhamento entre processos também é habilitado, possibilitando que diferentes partes do sistema alterem essa região de memória simultaneamente, garantindo uma comunicação eficiente entre componentes.
 
+Com o mapeamento completo, deve-se configurar tanto o Pinmux quanto o controlador I2C0 para estabelecer a comunicação com o acelerômetro.
+
+# Configuração do Pin Mux
+Depois de mapear a base de endereços, os valores dos offsets de cada registrador são somados à base para acessar regiões específicas e realizar as configurações necessárias. A seguir estão os registradores essenciais para garantir o roteamento correto dos sinais I2C para o controlador I2C0:
+
+GENERALIO7 (offset: 0x127): Este registrador é ajustado para o valor "1".
+GENERALIO8 (offset: 0x128): Este registrador é ajustado para o valor "1".
+I2C0USEFPGA (offset: 0x1C1): Este registrador é configurado para "0".
+
+# Configuração do I2C0
+Esses registradores são manipulados para inicializar e controlar a comunicação com o acelerômetro ADXL345. Os seguintes registradores são acessados, utilizando seus respectivos offsets:
+**I2C_CON** - Offset: 0x0
+              Função:
 # Desenvolvimento
 O projeto foi dividido em módulos para um melhor desenvolvimento. Sendo os modulo um com jogo Tetris, acelerômetro, biblioteca em assembly e algumas funções extras.
 
