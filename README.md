@@ -73,7 +73,12 @@ O projeto foi dividido em módulos para um melhor desenvolvimento. Sendo os modu
 ## Acelerometro
 Nesse modulo a implementação de comunicação I2C para um acelerômetro (ADXL345), onde o código acessa o dispositivo através do /dev/mem e manipula os registradores diretamente. 
 
-## 
+## GPU
+### GPU_letters
+Essa função é responsável pela criação das letras e números em uma submatriz 5x5, letras essas que seram usadas para a criação de textos e pontuações.
+## GPU_lib
+
+
 
 
 <br>
