@@ -23,4 +23,5 @@ void definirNumero6(char matriz[5][5]);
 void definirNumero7(char matriz[5][5]);
 void definirNumero8(char matriz[5][5]);
 void definirNumero9(char matriz[5][5]);
-
+void definirLetraP(char matriz[5][5]);
+void definirDoisPontos(char matriz[5][5]);

@@ -57,6 +57,7 @@ void *accel_working(void *args);
 void limpar_matriz();
 void pausar_game();
 void rotacionar();
+void mudarCorArray(int linhas, int colunas, Forma forma, int cor);
 
 /* Definição das peças */
 const Forma VetorDeFormas[7] = {
@@ -187,8 +188,8 @@ int main() {
 
     LISTEN_BTN = 0;
     ACCEL = 0;
-    pthread_join(button_threads, NULL);
-    pthread_join(accel_working, NULL);
+    pthread_join(thread_button, NULL);
+    pthread_join(thread_accel, NULL);
     desmapear_gpu();
 
     return 0;
@@ -234,11 +235,11 @@ void limpar_matriz() {
 }
 
 void rotacionar() {
-    while (1) {
-        RotacionarForma(forma_atual);
-        BUTTON = 1;
-        break;
-    }
+  while (1) {
+    RotacionarForma(forma_atual);
+    BUTTON = 1;
+    break;
+  }
 }
 
 /*
@@ -444,4 +445,5 @@ void *button_threads(void *args) {
             usleep(200000);
         }
     }
+    return NULL;
 }

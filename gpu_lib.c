@@ -11,7 +11,7 @@ extern void clear_background();
 extern int time_is_up();
 extern void reset_pulsecounter();
 extern void mem_unmap();
-extern int botoes();
+extern int button();
 
 void mapear_gpu() {
     mem_map();
@@ -395,7 +395,7 @@ void escrever_GameOver(int corG,int corA,int corM,int corE,int corO,int corV,int
 }
 
 void escreverPause(int corP,int corA,int corU,int corS,int corE,int posX, int posY,int tamanho){
-    char Pause[5][36] = {0};
+    char Pause[5][36] = {{0}};
     char letraP[5][5]= {{0}}, letraA[5][5]={{0}}, letraU[5][5]={{0}}, letraS[5][5]={{0}},letraE[5][5]={{0}} ;
     int i,j;
     // Definindo as letras
@@ -433,7 +433,7 @@ void escreverPressionePB(int corP,int corR,int corE,int corS,int corI,int corO,i
     char PB[5][16] = {{0}};
     char Para[5][30] = {{0}};
     char Jogar[5][31] = {{0}};
-    char letraP[5][5]= {0}, letraR[5][5]= {0},letraE[5][5]= {0},letraS[5][5]= {0},letraI[5][5]= {0} ,letraO[5][5]= {0},letraN[5][5]= {0},letraB[5][5]= {0}, letraA[5][5]= {0},letraJ[5][5]= {0},letraG[5][5]= {0} ;
+    char letraP[5][5]= {{0}}, letraR[5][5] = {{0}},letraE[5][5]= {{0}},letraS[5][5]= {{0}},letraI[5][5]= {{0}} ,letraO[5][5]= {{0}},letraN[5][5]= {{0}},letraB[5][5]= {{0}}, letraA[5][5]= {{0}},letraJ[5][5]= {{0}},letraG[5][5]= {{0}} ;
 
     definirLetraP(letraP);
     mudarCor(5,5,letraP,corP);
