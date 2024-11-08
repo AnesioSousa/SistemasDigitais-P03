@@ -1,3 +1,6 @@
+![Tela Inicial do Tetris](AnesioSousa/SistemasDigitais-P02/blob/main/Imagem%20do%20inicio.jpeg)
+
+
 # 🟦🟩🟥🟨 GPU-lib 🟩🟨🟥🟦
 Biblioteca com funções gráficas para o Processador Gráfico CoLenda, que permitem facilitar a implementação de jogos digitais para a plataforma DE1-SOC.
 
