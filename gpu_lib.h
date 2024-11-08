@@ -14,7 +14,10 @@ int time_is_up();
 void reset_pulsecounter();
 
 
-void draw_game_over_screen();
+void escreverPressionePB(int corP,int corR,int corE,int corS,int corI,int corO,int corN,int corB,int corA,int corJ,int corG,int posX, int posY,int tamanho);
+void escreverPause(int corP,int corA,int corU,int corS,int corE,int posX, int posY,int tamanho);
+void escrever_GameOver(int corG,int corA,int corM,int corE,int corO,int corV,int corR,int posX, int posY,int tamanho);
+int botoes();
 void escreverTetris(int corT,int corE,int corR,int corI,int corS,int posX, int posY,int tamanho);
 void desenhar_tela_inicial();
 void desenhar_T_vermelho();

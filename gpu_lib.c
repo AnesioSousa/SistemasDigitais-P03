@@ -11,6 +11,7 @@ extern void clear_background();
 extern int time_is_up();
 extern void reset_pulsecounter();
 extern void mem_unmap();
+extern int botoes();
 
 void mapear_gpu() {
     mem_map();
@@ -79,8 +80,8 @@ int i,j;
     }
 }
 void escreverTetris(int corT,int corE,int corR,int corI,int corS,int posX, int posY,int tamanho){
-    char tetris[5][36] = {0};
-    char letraT[5][5], letraE[5][5], letraR[5][5], letraI[5][5], letraS[5][5];
+    char tetris[5][36] = {{0}};
+    char letraT[5][5] = {{0}}, letraE[5][5] = {{0}}, letraR[5][5] = {{0}}, letraI[5][5] = {{0}}, letraS[5][5] = {{0}};
     int i,j;
     // Definindo as letras
     definirLetraT(letraT);
@@ -114,40 +115,10 @@ void escreverTetris(int corT,int corE,int corR,int corI,int corS,int posX, int p
     //espacamento pode variar entre 1 e 3
     ler_matriz(5,36,tetris,2,posX,posY,tamanho);
 }
-/*
-void escrever_gameover(int posX, int posY,int tamanho){
-    char pts[5][26] = {{0}};
-    char letraT[5][5],letraS[5][5],letraP[5][5],doisP[5][5];
-    int i,j;
 
-    definirLetraT(letraT);
-    mudarCor(5,5,letraT,corT);
-    
-    definirLetraS(letraS);
-    mudarCor(5,5,letraS,corS);
-    
-    definirLetraP(letraP);
-    mudarCor(5,5,letraP,corP);
-    
-    definirDoisPontos(doisP);
-    mudarCor(5,5,doisP,corDoisP);
-    
-    for ( i = 0; i < 5; i++) {
-        for ( j = 0; j < 5; j++) {
-            pts[i][j] = letraP[i][j]; 
-            pts[i][6 + j] = letraT[i][j]; 
-            pts[i][12 + j] = letraS[i][j]; 
-            pts[i][18 + j] = doisP[i][j]; 
-        }
-    }
-    //testar com off_X = 35 e off_Y = 25
-    //e com tamanho = 1
-    ler_matriz(5,26,pts,1,posX,posY,tamanho);
-}
-*/
 void escrever_Pts(int corT,int corS,int corP,int corDoisP,int posX, int posY,int tamanho){
-    char pts[5][26] = {0};
-    char letraT[5][5],letraS[5][5],letraP[5][5],doisP[5][5];
+    char pts[5][26] = {{0}};
+    char letraT[5][5] = {{0}},letraS[5][5] = {{0}},letraP[5][5] = {{0}},doisP[5][5] = {{0}};
     int i,j;
 
     definirLetraT(letraT);
@@ -192,7 +163,7 @@ void exibirPontuacao(int pontuacao,int linhas,int colunas,char matriz[linhas][co
     int i,j;
     int c = 0; /* digit position */
     int p = pontuacao;
-    char digito1[5][5],digito2[5][5],digito3[5][5],digito4[5][5],digito5[5][5],digito6[5][5]= {0};
+    char digito1[5][5] = {{0}},digito2[5][5] = {{0}},digito3[5][5] = {{0}},digito4[5][5] = {{0}},digito5[5][5] = {{0}},digito6[5][5] = {{0}};
     while (p != 0)
     {
         p /= 10;
@@ -214,7 +185,7 @@ void exibirPontuacao(int pontuacao,int linhas,int colunas,char matriz[linhas][co
       }
       for ( i = 0; i < c; i++)
       {   
-        char temp[5][5]= {0};
+        char temp[5][5] = {{0}};
         switch (numberArray[i])
         {
           case 0:
@@ -286,7 +257,7 @@ void exibirPontuacao(int pontuacao,int linhas,int colunas,char matriz[linhas][co
     }else{
       for ( i = 0; i < 6; i++)
       {   
-        char temp[5][5]= {0};
+        char temp[5][5] = {{0}};
         definirNumero0(temp);
         switch (i+1)
         {
@@ -354,380 +325,6 @@ void mudarCor(int linhas, int colunas,char matriz[5][5],int cor){
 }
 
 
-/**
- * \brief           Desenha a tela de FIM DE JOGO do jogo
- */
-void draw_game_over_screen() {
-    set_background_block(23, 18, 7, 0, 0);
-    set_background_block(24, 18, 7, 0, 0);
-    set_background_block(25, 18, 7, 0, 0);
-    set_background_block(26, 18, 7, 0, 0);
-    set_background_block(33, 18, 7, 0, 0);
-    set_background_block(34, 18, 7, 0, 0);
-    set_background_block(35, 18, 7, 0, 0);
-    set_background_block(36, 18, 7, 0, 0);
-    set_background_block(41, 18, 7, 0, 0);
-    set_background_block(42, 18, 7, 0, 0);
-    set_background_block(49, 18, 7, 0, 0);
-    set_background_block(50, 18, 7, 0, 0);
-    set_background_block(53, 18, 7, 0, 0);
-    set_background_block(54, 18, 7, 0, 0);
-    set_background_block(55, 18, 7, 0, 0);
-    set_background_block(56, 18, 7, 0, 0);
-    set_background_block(57, 18, 7, 0, 0);
-    set_background_block(58, 18, 7, 0, 0);
-    set_background_block(59, 18, 7, 0, 0);
-    set_background_block(60, 18, 7, 0, 0);
-    set_background_block(23, 19, 7, 0, 0);
-    set_background_block(24, 19, 7, 0, 0);
-    set_background_block(25, 19, 7, 0, 0);
-    set_background_block(26, 19, 7, 0, 0);
-    set_background_block(33, 19, 7, 0, 0);
-    set_background_block(34, 19, 7, 0, 0);
-    set_background_block(35, 19, 7, 0, 0);
-    set_background_block(36, 19, 7, 0, 0);
-    set_background_block(41, 19, 7, 0, 0);
-    set_background_block(42, 19, 7, 0, 0);
-    set_background_block(49, 19, 7, 0, 0);
-    set_background_block(50, 19, 7, 0, 0);
-    set_background_block(53, 19, 7, 0, 0);
-    set_background_block(54, 19, 7, 0, 0);
-    set_background_block(55, 19, 7, 0, 0);
-    set_background_block(56, 19, 7, 0, 0);
-    set_background_block(57, 19, 7, 0, 0);
-    set_background_block(58, 19, 7, 0, 0);
-    set_background_block(59, 19, 7, 0, 0);
-    set_background_block(60, 19, 7, 0, 0);
-    set_background_block(21, 20, 7, 0, 0);
-    set_background_block(22, 20, 7, 0, 0);
-    set_background_block(31, 20, 7, 0, 0);
-    set_background_block(32, 20, 7, 0, 0);
-    set_background_block(37, 20, 7, 0, 0);
-    set_background_block(38, 20, 7, 0, 0);
-    set_background_block(41, 20, 7, 0, 0);
-    set_background_block(42, 20, 7, 0, 0);
-    set_background_block(43, 20, 7, 0, 0);
-    set_background_block(44, 20, 7, 0, 0);
-    set_background_block(47, 20, 7, 0, 0);
-    set_background_block(48, 20, 7, 0, 0);
-    set_background_block(49, 20, 7, 0, 0);
-    set_background_block(50, 20, 7, 0, 0);
-    set_background_block(53, 20, 7, 0, 0);
-    set_background_block(54, 20, 7, 0, 0);
-    set_background_block(21, 21, 7, 0, 0);
-    set_background_block(22, 21, 7, 0, 0);
-    set_background_block(31, 21, 7, 0, 0);
-    set_background_block(32, 21, 7, 0, 0);
-    set_background_block(37, 21, 7, 0, 0);
-    set_background_block(38, 21, 7, 0, 0);
-    set_background_block(41, 21, 7, 0, 0);
-    set_background_block(42, 21, 7, 0, 0);
-    set_background_block(43, 21, 7, 0, 0);
-    set_background_block(44, 21, 7, 0, 0);
-    set_background_block(47, 21, 7, 0, 0);
-    set_background_block(48, 21, 7, 0, 0);
-    set_background_block(49, 21, 7, 0, 0);
-    set_background_block(50, 21, 7, 0, 0);
-    set_background_block(53, 21, 7, 0, 0);
-    set_background_block(54, 21, 7, 0, 0);
-    set_background_block(21, 22, 7, 0, 0);
-    set_background_block(22, 22, 7, 0, 0);
-    set_background_block(25, 22, 7, 0, 0);
-    set_background_block(26, 22, 7, 0, 0);
-    set_background_block(27, 22, 7, 0, 0);
-    set_background_block(28, 22, 7, 0, 0);
-    set_background_block(31, 22, 7, 0, 0);
-    set_background_block(32, 22, 7, 0, 0);
-    set_background_block(33, 22, 7, 0, 0);
-    set_background_block(34, 22, 7, 0, 0);
-    set_background_block(35, 22, 7, 0, 0);
-    set_background_block(36, 22, 7, 0, 0);
-    set_background_block(37, 22, 7, 0, 0);
-    set_background_block(38, 22, 7, 0, 0);
-    set_background_block(41, 22, 7, 0, 0);
-    set_background_block(42, 22, 7, 0, 0);
-    set_background_block(45, 22, 7, 0, 0);
-    set_background_block(46, 22, 7, 0, 0);
-    set_background_block(49, 22, 7, 0, 0);
-    set_background_block(50, 22, 7, 0, 0);
-    set_background_block(53, 22, 7, 0, 0);
-    set_background_block(54, 22, 7, 0, 0);
-    set_background_block(55, 22, 7, 0, 0);
-    set_background_block(56, 22, 7, 0, 0);
-    set_background_block(57, 22, 7, 0, 0);
-    set_background_block(58, 22, 7, 0, 0);
-    set_background_block(21, 23, 7, 0, 0);
-    set_background_block(22, 23, 7, 0, 0);
-    set_background_block(25, 23, 7, 0, 0);
-    set_background_block(26, 23, 7, 0, 0);
-    set_background_block(27, 23, 7, 0, 0);
-    set_background_block(28, 23, 7, 0, 0);
-    set_background_block(31, 23, 7, 0, 0);
-    set_background_block(32, 23, 7, 0, 0);
-    set_background_block(33, 23, 7, 0, 0);
-    set_background_block(34, 23, 7, 0, 0);
-    set_background_block(35, 23, 7, 0, 0);
-    set_background_block(36, 23, 7, 0, 0);
-    set_background_block(37, 23, 7, 0, 0);
-    set_background_block(38, 23, 7, 0, 0);
-    set_background_block(41, 23, 7, 0, 0);
-    set_background_block(42, 23, 7, 0, 0);
-    set_background_block(45, 23, 7, 0, 0);
-    set_background_block(46, 23, 7, 0, 0);
-    set_background_block(49, 23, 7, 0, 0);
-    set_background_block(50, 23, 7, 0, 0);
-    set_background_block(53, 23, 7, 0, 0);
-    set_background_block(54, 23, 7, 0, 0);
-    set_background_block(55, 23, 7, 0, 0);
-    set_background_block(56, 23, 7, 0, 0);
-    set_background_block(57, 23, 7, 0, 0);
-    set_background_block(58, 23, 7, 0, 0);
-    set_background_block(21, 24, 7, 0, 0);
-    set_background_block(22, 24, 7, 0, 0);
-    set_background_block(27, 24, 7, 0, 0);
-    set_background_block(28, 24, 7, 0, 0);
-    set_background_block(31, 24, 7, 0, 0);
-    set_background_block(32, 24, 7, 0, 0);
-    set_background_block(37, 24, 7, 0, 0);
-    set_background_block(38, 24, 7, 0, 0);
-    set_background_block(41, 24, 7, 0, 0);
-    set_background_block(42, 24, 7, 0, 0);
-    set_background_block(49, 24, 7, 0, 0);
-    set_background_block(50, 24, 7, 0, 0);
-    set_background_block(53, 24, 7, 0, 0);
-    set_background_block(54, 24, 7, 0, 0);
-    set_background_block(21, 25, 7, 0, 0);
-    set_background_block(22, 25, 7, 0, 0);
-    set_background_block(27, 25, 7, 0, 0);
-    set_background_block(28, 25, 7, 0, 0);
-    set_background_block(31, 25, 7, 0, 0);
-    set_background_block(32, 25, 7, 0, 0);
-    set_background_block(37, 25, 7, 0, 0);
-    set_background_block(38, 25, 7, 0, 0);
-    set_background_block(41, 25, 7, 0, 0);
-    set_background_block(42, 25, 7, 0, 0);
-    set_background_block(49, 25, 7, 0, 0);
-    set_background_block(50, 25, 7, 0, 0);
-    set_background_block(53, 25, 7, 0, 0);
-    set_background_block(54, 25, 7, 0, 0);
-    set_background_block(23, 26, 7, 0, 0);
-    set_background_block(24, 26, 7, 0, 0);
-    set_background_block(25, 26, 7, 0, 0);
-    set_background_block(26, 26, 7, 0, 0);
-    set_background_block(31, 26, 7, 0, 0);
-    set_background_block(32, 26, 7, 0, 0);
-    set_background_block(37, 26, 7, 0, 0);
-    set_background_block(38, 26, 7, 0, 0);
-    set_background_block(41, 26, 7, 0, 0);
-    set_background_block(42, 26, 7, 0, 0);
-    set_background_block(49, 26, 7, 0, 0);
-    set_background_block(50, 26, 7, 0, 0);
-    set_background_block(53, 26, 7, 0, 0);
-    set_background_block(54, 26, 7, 0, 0);
-    set_background_block(55, 26, 7, 0, 0);
-    set_background_block(56, 26, 7, 0, 0);
-    set_background_block(57, 26, 7, 0, 0);
-    set_background_block(58, 26, 7, 0, 0);
-    set_background_block(59, 26, 7, 0, 0);
-    set_background_block(60, 26, 7, 0, 0);
-    set_background_block(23, 27, 7, 0, 0);
-    set_background_block(24, 27, 7, 0, 0);
-    set_background_block(25, 27, 7, 0, 0);
-    set_background_block(26, 27, 7, 0, 0);
-    set_background_block(31, 27, 7, 0, 0);
-    set_background_block(32, 27, 7, 0, 0);
-    set_background_block(37, 27, 7, 0, 0);
-    set_background_block(38, 27, 7, 0, 0);
-    set_background_block(41, 27, 7, 0, 0);
-    set_background_block(42, 27, 7, 0, 0);
-    set_background_block(49, 27, 7, 0, 0);
-    set_background_block(50, 27, 7, 0, 0);
-    set_background_block(53, 27, 7, 0, 0);
-    set_background_block(54, 27, 7, 0, 0);
-    set_background_block(55, 27, 7, 0, 0);
-    set_background_block(56, 27, 7, 0, 0);
-    set_background_block(57, 27, 7, 0, 0);
-    set_background_block(58, 27, 7, 0, 0);
-    set_background_block(59, 27, 7, 0, 0);
-    set_background_block(60, 27, 7, 0, 0);
-    set_background_block(23, 30, 7, 0, 0);
-    set_background_block(24, 30, 7, 0, 0);
-    set_background_block(25, 30, 7, 0, 0);
-    set_background_block(26, 30, 7, 0, 0);
-    set_background_block(31, 30, 7, 0, 0);
-    set_background_block(32, 30, 7, 0, 0);
-    set_background_block(39, 30, 7, 0, 0);
-    set_background_block(40, 30, 7, 0, 0);
-    set_background_block(43, 30, 7, 0, 0);
-    set_background_block(44, 30, 7, 0, 0);
-    set_background_block(45, 30, 7, 0, 0);
-    set_background_block(46, 30, 7, 0, 0);
-    set_background_block(47, 30, 7, 0, 0);
-    set_background_block(48, 30, 7, 0, 0);
-    set_background_block(49, 30, 7, 0, 0);
-    set_background_block(50, 30, 7, 0, 0);
-    set_background_block(53, 30, 7, 0, 0);
-    set_background_block(54, 30, 7, 0, 0);
-    set_background_block(55, 30, 7, 0, 0);
-    set_background_block(56, 30, 7, 0, 0);
-    set_background_block(57, 30, 7, 0, 0);
-    set_background_block(58, 30, 7, 0, 0);
-    set_background_block(23, 31, 7, 0, 0);
-    set_background_block(24, 31, 7, 0, 0);
-    set_background_block(25, 31, 7, 0, 0);
-    set_background_block(26, 31, 7, 0, 0);
-    set_background_block(31, 31, 7, 0, 0);
-    set_background_block(32, 31, 7, 0, 0);
-    set_background_block(39, 31, 7, 0, 0);
-    set_background_block(40, 31, 7, 0, 0);
-    set_background_block(43, 31, 7, 0, 0);
-    set_background_block(44, 31, 7, 0, 0);
-    set_background_block(45, 31, 7, 0, 0);
-    set_background_block(46, 31, 7, 0, 0);
-    set_background_block(47, 31, 7, 0, 0);
-    set_background_block(48, 31, 7, 0, 0);
-    set_background_block(49, 31, 7, 0, 0);
-    set_background_block(50, 31, 7, 0, 0);
-    set_background_block(53, 31, 7, 0, 0);
-    set_background_block(54, 31, 7, 0, 0);
-    set_background_block(55, 31, 7, 0, 0);
-    set_background_block(56, 31, 7, 0, 0);
-    set_background_block(57, 31, 7, 0, 0);
-    set_background_block(58, 31, 7, 0, 0);
-    set_background_block(21, 32, 7, 0, 0);
-    set_background_block(22, 32, 7, 0, 0);
-    set_background_block(27, 32, 7, 0, 0);
-    set_background_block(28, 32, 7, 0, 0);
-    set_background_block(31, 32, 7, 0, 0);
-    set_background_block(32, 32, 7, 0, 0);
-    set_background_block(39, 32, 7, 0, 0);
-    set_background_block(40, 32, 7, 0, 0);
-    set_background_block(43, 32, 7, 0, 0);
-    set_background_block(44, 32, 7, 0, 0);
-    set_background_block(53, 32, 7, 0, 0);
-    set_background_block(54, 32, 7, 0, 0);
-    set_background_block(59, 32, 7, 0, 0);
-    set_background_block(60, 32, 7, 0, 0);
-    set_background_block(21, 33, 7, 0, 0);
-    set_background_block(22, 33, 7, 0, 0);
-    set_background_block(27, 33, 7, 0, 0);
-    set_background_block(28, 33, 7, 0, 0);
-    set_background_block(31, 33, 7, 0, 0);
-    set_background_block(32, 33, 7, 0, 0);
-    set_background_block(39, 33, 7, 0, 0);
-    set_background_block(40, 33, 7, 0, 0);
-    set_background_block(43, 33, 7, 0, 0);
-    set_background_block(44, 33, 7, 0, 0);
-    set_background_block(53, 33, 7, 0, 0);
-    set_background_block(54, 33, 7, 0, 0);
-    set_background_block(59, 33, 7, 0, 0);
-    set_background_block(60, 33, 7, 0, 0);
-    set_background_block(21, 34, 7, 0, 0);
-    set_background_block(22, 34, 7, 0, 0);
-    set_background_block(27, 34, 7, 0, 0);
-    set_background_block(28, 34, 7, 0, 0);
-    set_background_block(33, 34, 7, 0, 0);
-    set_background_block(34, 34, 7, 0, 0);
-    set_background_block(37, 34, 7, 0, 0);
-    set_background_block(38, 34, 7, 0, 0);
-    set_background_block(43, 34, 7, 0, 0);
-    set_background_block(44, 34, 7, 0, 0);
-    set_background_block(45, 34, 7, 0, 0);
-    set_background_block(46, 34, 7, 0, 0);
-    set_background_block(47, 34, 7, 0, 0);
-    set_background_block(48, 34, 7, 0, 0);
-    set_background_block(53, 34, 7, 0, 0);
-    set_background_block(54, 34, 7, 0, 0);
-    set_background_block(55, 34, 7, 0, 0);
-    set_background_block(56, 34, 7, 0, 0);
-    set_background_block(57, 34, 7, 0, 0);
-    set_background_block(58, 34, 7, 0, 0);
-    set_background_block(21, 35, 7, 0, 0);
-    set_background_block(22, 35, 7, 0, 0);
-    set_background_block(27, 35, 7, 0, 0);
-    set_background_block(28, 35, 7, 0, 0);
-    set_background_block(33, 35, 7, 0, 0);
-    set_background_block(34, 35, 7, 0, 0);
-    set_background_block(37, 35, 7, 0, 0);
-    set_background_block(38, 35, 7, 0, 0);
-    set_background_block(43, 35, 7, 0, 0);
-    set_background_block(44, 35, 7, 0, 0);
-    set_background_block(45, 35, 7, 0, 0);
-    set_background_block(46, 35, 7, 0, 0);
-    set_background_block(47, 35, 7, 0, 0);
-    set_background_block(48, 35, 7, 0, 0);
-    set_background_block(53, 35, 7, 0, 0);
-    set_background_block(54, 35, 7, 0, 0);
-    set_background_block(55, 35, 7, 0, 0);
-    set_background_block(56, 35, 7, 0, 0);
-    set_background_block(57, 35, 7, 0, 0);
-    set_background_block(58, 35, 7, 0, 0);
-    set_background_block(21, 36, 7, 0, 0);
-    set_background_block(22, 36, 7, 0, 0);
-    set_background_block(27, 36, 7, 0, 0);
-    set_background_block(28, 36, 7, 0, 0);
-    set_background_block(33, 36, 7, 0, 0);
-    set_background_block(34, 36, 7, 0, 0);
-    set_background_block(37, 36, 7, 0, 0);
-    set_background_block(38, 36, 7, 0, 0);
-    set_background_block(43, 36, 7, 0, 0);
-    set_background_block(44, 36, 7, 0, 0);
-    set_background_block(53, 36, 7, 0, 0);
-    set_background_block(54, 36, 7, 0, 0);
-    set_background_block(57, 36, 7, 0, 0);
-    set_background_block(58, 36, 7, 0, 0);
-    set_background_block(21, 37, 7, 0, 0);
-    set_background_block(22, 37, 7, 0, 0);
-    set_background_block(27, 37, 7, 0, 0);
-    set_background_block(28, 37, 7, 0, 0);
-    set_background_block(33, 37, 7, 0, 0);
-    set_background_block(34, 37, 7, 0, 0);
-    set_background_block(37, 37, 7, 0, 0);
-    set_background_block(38, 37, 7, 0, 0);
-    set_background_block(43, 37, 7, 0, 0);
-    set_background_block(44, 37, 7, 0, 0);
-    set_background_block(53, 37, 7, 0, 0);
-    set_background_block(54, 37, 7, 0, 0);
-    set_background_block(57, 37, 7, 0, 0);
-    set_background_block(58, 37, 7, 0, 0);
-    set_background_block(23, 38, 7, 0, 0);
-    set_background_block(24, 38, 7, 0, 0);
-    set_background_block(25, 38, 7, 0, 0);
-    set_background_block(26, 38, 7, 0, 0);
-    set_background_block(35, 38, 7, 0, 0);
-    set_background_block(36, 38, 7, 0, 0);
-    set_background_block(43, 38, 7, 0, 0);
-    set_background_block(44, 38, 7, 0, 0);
-    set_background_block(45, 38, 7, 0, 0);
-    set_background_block(46, 38, 7, 0, 0);
-    set_background_block(47, 38, 7, 0, 0);
-    set_background_block(48, 38, 7, 0, 0);
-    set_background_block(49, 38, 7, 0, 0);
-    set_background_block(50, 38, 7, 0, 0);
-    set_background_block(53, 38, 7, 0, 0);
-    set_background_block(54, 38, 7, 0, 0);
-    set_background_block(59, 38, 7, 0, 0);
-    set_background_block(60, 38, 7, 0, 0);
-    set_background_block(23, 39, 7, 0, 0);
-    set_background_block(24, 39, 7, 0, 0);
-    set_background_block(25, 39, 7, 0, 0);
-    set_background_block(26, 39, 7, 0, 0);
-    set_background_block(35, 39, 7, 0, 0);
-    set_background_block(36, 39, 7, 0, 0);
-    set_background_block(43, 39, 7, 0, 0);
-    set_background_block(44, 39, 7, 0, 0);
-    set_background_block(45, 39, 7, 0, 0);
-    set_background_block(46, 39, 7, 0, 0);
-    set_background_block(47, 39, 7, 0, 0);
-    set_background_block(48, 39, 7, 0, 0);
-    set_background_block(49, 39, 7, 0, 0);
-    set_background_block(50, 39, 7, 0, 0);
-    set_background_block(53, 39, 7, 0, 0);
-    set_background_block(54, 39, 7, 0, 0);
-    set_background_block(59, 39, 7, 0, 0);
-    set_background_block(60, 39, 7, 0, 0);
-}
-
 void desenhar_bloco(uint32_t line, uint32_t col, uint32_t B, uint32_t G, uint32_t R) {
     set_background_block(line, col, B, G, R);
 }
@@ -745,6 +342,178 @@ int renderizou(){
     return time_is_up();
 } 
 
+/*return void?*/
 void renderizar_por_mais_tempo(){
     return reset_pulsecounter();
+}
+
+int botoes(){
+	return button();
+}
+
+void escrever_GameOver(int corG,int corA,int corM,int corE,int corO,int corV,int corR,int posX, int posY,int tamanho){
+    char GameOver[5][60] = {{0}};
+    char letraG[5][5] = {{0}},letraA[5][5]= {{0}},letraM[5][5]= {{0}},letraO[5][5]= {{0}},letraV[5][5]= {{0}},letraE[5][5]= {{0}},letraR[5][5]= {{0}};
+    int i,j;
+
+    definirLetraG(letraG);
+    mudarCor(5,5,letraG,corG);
+    
+    definirLetraA(letraA);
+    mudarCor(5,5,letraA,corA);
+    
+    definirLetraM(letraM);
+    mudarCor(5,5,letraM,corM);
+    
+    definirLetraE(letraE);
+    mudarCor(5,5,letraE,corE);
+    
+    definirLetraO(letraO);
+    mudarCor(5,5,letraO,corO);
+
+    definirLetraV(letraV);
+    mudarCor(5,5,letraV,corV);
+
+    definirLetraE(letraE);
+    mudarCor(5,5,letraE,corE);
+
+    definirLetraR(letraR);
+    mudarCor(5,5,letraR,corR);
+    for ( i = 0; i < 5; i++) {
+        for ( j = 0; j < 5; j++) {
+            GameOver[i][j] = letraG[i][j]; 
+            GameOver[i][6 + j] = letraA[i][j]; 
+            GameOver[i][12 + j] = letraM[i][j]; 
+            GameOver[i][18 + j] = letraE[i][j];
+            GameOver[i][30 + j] = letraO[i][j]; 
+            GameOver[i][36 + j] = letraV[i][j]; 
+            GameOver[i][42 + j] = letraE[i][j]; 
+            GameOver[i][48 + j] = letraR[i][j];  
+        }
+    }
+    ler_matriz(5,60,GameOver,1,posX,posY,tamanho);
+}
+
+void escreverPause(int corP,int corA,int corU,int corS,int corE,int posX, int posY,int tamanho){
+    char Pause[5][36] = {0};
+    char letraP[5][5]= {{0}}, letraA[5][5]={{0}}, letraU[5][5]={{0}}, letraS[5][5]={{0}},letraE[5][5]={{0}} ;
+    int i,j;
+    // Definindo as letras
+    definirLetraP(letraP);
+    mudarCor(5,5,letraP,corP);
+
+    definirLetraA(letraA);
+    mudarCor(5,5,letraA,corA);
+
+    definirLetraU(letraU);
+    mudarCor(5,5,letraU,corU);
+
+    definirLetraS(letraS);
+    mudarCor(5,5,letraS,corS);
+
+    definirLetraE(letraE);
+    mudarCor(5,5,letraE,corE);
+
+    // Concatenando as letras na matriz
+    for (i = 0; i < 5; i++) {
+        for (j = 0; j < 5; j++) {
+            Pause[i][j] = letraP[i][j]; // T
+            Pause[i][6 + j] = letraA[i][j]; // E
+            Pause[i][12 + j] = letraU[i][j]; // T
+            Pause[i][18 + j] = letraS[i][j]; // R
+            Pause[i][24 + j] = letraE[i][j]; // I
+        }
+    }
+    ler_matriz(5,36,Pause,2,posX,posY,tamanho);
+}
+
+void escreverPressionePB(int corP,int corR,int corE,int corS,int corI,int corO,int corN,int corB,int corA,int corJ,int corG,int posX, int posY,int tamanho){
+    int i,j;
+    char Pressione[5][60] = {{0}};
+    char PB[5][16] = {{0}};
+    char Para[5][30] = {{0}};
+    char Jogar[5][31] = {{0}};
+    char letraP[5][5]= {0}, letraR[5][5]= {0},letraE[5][5]= {0},letraS[5][5]= {0},letraI[5][5]= {0} ,letraO[5][5]= {0},letraN[5][5]= {0},letraB[5][5]= {0}, letraA[5][5]= {0},letraJ[5][5]= {0},letraG[5][5]= {0} ;
+
+    definirLetraP(letraP);
+    mudarCor(5,5,letraP,corP);
+
+    definirLetraR(letraR);
+    mudarCor(5,5,letraR,corR);
+
+    definirLetraE(letraE);
+    mudarCor(5,5,letraE,corE);
+
+    definirLetraS(letraS);
+    mudarCor(5,5,letraS,corS);
+    
+    definirLetraI(letraI);
+    mudarCor(5,5,letraI,corI);
+
+    definirLetraO(letraO);
+    mudarCor(5,5,letraO,corO);
+    
+    definirLetraN(letraN);
+    mudarCor(5,5,letraN,corN);
+
+    definirLetraA(letraA);
+    mudarCor(5,5,letraA,corA);
+
+    definirLetraB(letraB);
+    mudarCor(5,5,letraB,corB);
+
+    definirLetraJ(letraJ);
+    mudarCor(5,5,letraJ,corJ);
+
+    definirLetraG(letraG);
+    mudarCor(5,5,letraG,corG);
+
+    //PRESSIONE
+    for ( i = 0; i < 5; i++) {
+        for ( j = 0; j < 5; j++) {
+            Pressione[i][j] = letraP[i][j]; 
+            Pressione[i][6 + j] = letraR[i][j]; 
+            Pressione[i][12 + j] = letraE[i][j]; 
+            Pressione[i][18 + j] = letraS[i][j];
+            Pressione[i][24 + j] = letraS[i][j]; 
+            Pressione[i][30 + j] = letraI[i][j]; 
+            Pressione[i][36 + j] = letraO[i][j]; 
+            Pressione[i][42 + j] = letraN[i][j];
+            Pressione[i][48 + j] = letraE[i][j];  
+        }
+    }
+
+    //PB
+
+    for ( i = 0; i < 5; i++) {
+        for ( j = 0; j < 5; j++) {
+            PB[i][j] = letraP[i][j]; 
+            PB[i][6 + j] = letraB[i][j]; 
+        }
+    }
+
+    //PARA
+    for ( i = 0; i < 5; i++) {
+        for ( j = 0; j < 5; j++) {
+            Para[i][j] = letraP[i][j]; 
+            Para[i][6 + j] = letraA[i][j]; 
+            Para[i][12 + j] = letraR[i][j]; 
+            Para[i][18 + j] = letraA[i][j]; 
+        }
+    }
+
+    //JOGAR
+    for ( i = 0; i < 5; i++) {
+        for ( j = 0; j < 5; j++) {
+            Jogar[i][j] = letraJ[i][j]; 
+            Jogar[i][6 + j] = letraO[i][j]; 
+            Jogar[i][12 + j] = letraG[i][j]; 
+            Jogar[i][18 + j] = letraA[i][j];
+            Jogar[i][24 + j] = letraR[i][j]; 
+        }
+    }
+    ler_matriz(5,60,Pressione,1,posX,posY,tamanho);
+    ler_matriz(5,16,PB,1,posX+60,posY,tamanho);
+    ler_matriz(5,30,Para,1,posX+5,posY+6,tamanho);
+    ler_matriz(5,31,Jogar,1,posX+36,posY+6,tamanho);
 }

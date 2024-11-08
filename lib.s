@@ -13,6 +13,7 @@
 .global set_sprite
 .global time_is_up
 .global reset_pulsecounter
+.global button
 
 .type mem_map, %function
 mem_map:
@@ -76,6 +77,21 @@ mem_unmap:
     ldr r1, [sp, #4]
     ldr r0, [sp, #0]
     add sp, sp, #12
+
+    bx lr
+
+.type button %function
+button:
+    sub sp, sp, #4
+    str r10, [sp, #0]
+    
+    ldr r10, =mem_mapped_file_descriptor
+    ldr r10, [r10]
+
+    ldr r0, [r10, #0x0]
+
+    ldr r10, [sp, #0]
+    add sp, sp, #4
 
     bx lr
 

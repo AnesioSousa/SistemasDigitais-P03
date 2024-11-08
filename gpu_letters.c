@@ -162,3 +162,76 @@ void definirNumero9(char matriz[5][5]) {
     matriz[3][4] = 1;
     matriz[4][0] = 1;matriz[4][1] = 1; matriz[4][2] = 1; matriz[4][3] = 1;matriz[4][4] = 1;
 };
+
+
+void definirLetraG(char matriz[5][5]) {
+    matriz[0][0] = 1; matriz[0][1] = 1; matriz[0][2] = 1; matriz[0][3] = 1; matriz[0][4] = 1; // Parte superior
+    matriz[1][0] = 1;                                                   matriz[1][4] = 0;   // Lados do G
+    matriz[2][0] = 1;                   matriz[2][2] = 1; matriz[2][3] = 1;matriz[2][4] = 1;   // Lados do G
+    matriz[3][0] = 1; matriz[3][1] = 0; matriz[3][2] = 0; matriz[3][3] = 0; matriz[3][4] = 1;
+    matriz[4][0] = 1; matriz[4][1] = 1; matriz[4][2] = 1; matriz[4][3] = 1; matriz[4][4] = 1; // Parte inferior do "G"
+};
+
+void definirLetraA(char matriz[5][5]) {
+    matriz[0][2] = 1; // Parte superior do "A"
+    matriz[1][1] = 1; matriz[1][3] = 1; // Meia altura
+    matriz[2][0] = 1; matriz[2][2] = 0; matriz[2][4] = 1; // Meio do "A"
+    matriz[3][0] = 1; matriz[3][1] = 1;matriz[3][2] = 1;matriz[3][3] = 1;matriz[3][4] = 1; // Parte inferior
+    matriz[4][0] = 1; matriz[4][4] = 1; // Parte inferior
+};
+
+void definirLetraM(char matriz[5][5]) {
+    matriz[0][0] = 1; matriz[0][4] = 1; // Parte superior
+    matriz[1][0] = 1; matriz[1][1] = 1;matriz[1][3] = 1;matriz[1][4] = 1; // Ponto do "M"
+    matriz[2][0] = 1; matriz[2][2] = 1; matriz[2][4] = 1; // Ponto do "M"
+    matriz[3][0] = 1; matriz[3][1] = 0; matriz[3][4] = 1; // Inferior
+    matriz[4][0] = 1; matriz[4][4] = 1; // Inferior
+};
+
+void definirLetraO(char matriz[5][5]) {
+    matriz[0][1] = 1; matriz[0][2] = 1; matriz[0][3] = 1; // Parte superior
+    matriz[1][0] = 1;                                  matriz[1][4] = 1; // Lados
+    matriz[2][0] = 1;                                  matriz[2][4] = 1; // Lados
+    matriz[3][0] = 1; matriz[3][2] = 0; matriz[3][4] = 1; // Parte inferior
+    matriz[4][0] = 0;matriz[4][1] = 1; matriz[4][2] = 1; matriz[4][3] = 1;matriz[4][4] = 0; // Parte inferior
+};
+
+void definirLetraV(char matriz[5][5]) {
+    matriz[1][4] = 1;                       
+    matriz[1][0] = 1; 
+    matriz[2][0] = 1; matriz[2][4] = 1;     // Meio do "V"
+    matriz[3][1] = 1; matriz[3][3] = 1;     // Meio do "V"
+    matriz[4][2] = 1;                       // Parte inferior
+};
+
+void definirLetraU(char matriz[5][5]) {
+    matriz[0][0] = 1; matriz[0][4] = 1; // Parte superior
+    matriz[1][0] = 1; matriz[1][4] = 1; // Lados
+    matriz[2][0] = 1; matriz[2][4] = 1; // Lados
+    matriz[3][0] = 1; matriz[3][4] = 1; // Lados
+    matriz[4][0] = 1; matriz[4][1] = 1;matriz[4][2] = 1; matriz[4][3] = 1;matriz[4][4] = 1; // Parte inferior
+};
+
+void definirLetraN(char matriz[5][5]) {
+    matriz[0][0] = 1; matriz[0][4] = 1;matriz[0][4] = 1; // Parte superior
+    matriz[1][0] = 1; matriz[3][3] = 1;matriz[1][4] = 1; // Lado esquerdo e meio
+    matriz[2][0] = 1; matriz[2][2] = 1;matriz[2][4] = 1; // Meio
+    matriz[3][0] = 1; matriz[1][1] = 1;matriz[3][4] = 1; // Lado esquerdo e meio
+    matriz[4][0] = 1; matriz[4][4] = 1;matriz[4][4] = 1; // Parte inferior
+};
+
+void definirLetraB(char matriz[5][5]) {
+    matriz[0][0] = 1; matriz[0][1] = 1; matriz[0][2] = 1; matriz[0][3] = 1; // Parte superior
+    matriz[1][0] = 1;                        matriz[1][3] = 1; // Lado esquerdo e lado direito superior
+    matriz[2][0] = 1; matriz[2][1] = 1; matriz[2][2] = 1; matriz[2][3] = 0; // Meio
+    matriz[3][0] = 1;                        matriz[3][3] = 1; // Lado esquerdo e lado direito inferior
+    matriz[4][0] = 1; matriz[4][1] = 1; matriz[4][2] = 1; matriz[4][3] = 1; // Parte inferior
+};
+
+void definirLetraJ(char matriz[5][5]) {
+    matriz[0][2] = 1; // Parte superior
+    matriz[1][2] = 1; // Lado superior
+    matriz[2][2] = 1; // Lado superior
+    matriz[3][0] = 1;matriz[3][2] = 1; // Lado esquerdo
+    matriz[4][0] = 1;matriz[4][1] = 1; matriz[4][2] = 1; // Curva para baixo
+};

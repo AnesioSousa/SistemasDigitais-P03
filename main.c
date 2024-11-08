@@ -26,10 +26,9 @@
 #include <unistd.h>
 #include <string.h>
 
-int ACCEL = 1;
-int BUTTON = 1;
-int pausegame = 0;
-int iniciarjogo = 1;
+int LISTEN_BTN = 1;
+int ACCEL = 1, BUTTON = 0;
+int pause_game = 0;
 int fd;
 I2C_Registers regs;
 static int16_t X[1];
@@ -94,34 +93,37 @@ const Forma VetorDeFormas[7] = {
 
 struct timeval before_now, now;
 int decrementar = 1000, pontuacao = 0;
-char Matriz[LINHAS][COLUNAS] = {{0}};
+char Matriz[LINHAS][COLUNAS];
 char pontuacao_Matriz[5][36], borda_Matriz[LINHAS+1][COLUNAS+1] = {{0}};
 const int VetorDeCores[4] = {1,2,3,4};
 Forma forma_atual;
-suseconds_t temporizador = 40000; // é só diminuir esse valor pro jogo executar mais rápido
-int opcao;
+suseconds_t temporizador = 400000; // é só diminuir esse valor pro jogo executar mais rápido
 
 
 int main(){
-	mapear_gpu();
-	
-	stop = 0;
-	opcao = 0;	
+	int i, j;
 	srand(time(0));
 	gettimeofday(&before_now, NULL);
+
+	mapear_gpu();
 	inicializacao_accel();
-	
+
 	pthread_t thread_button;
 	pthread_t thread_accel;
 	pthread_create(&thread_accel, NULL, accel_working, NULL);
 	pthread_create(&thread_button, NULL, button_threads, NULL);
+	limpar_tela();
+	escreverTetris(1,6,5,4,3,4, 10, 2);
+	escreverPressionePB(1,1,1,1,1,1,1,1,1,1,1,4,30,1);
 
-	do{
+	do{	
+		stop = 0;
 		pontuacao = 0;
-		limpar_tela();
-		escreverTetris(rand()%7,rand()%7,rand()%7,rand()%7,rand()%7, 4, 20, 2);
-		scanf("%d", &opcao);
-		if(opcao == 1){
+		if(BUTTON == 1){
+			for (i = 0; i < LINHAS; i++) 
+				for (j = 0; j < COLUNAS; j++) 
+					Matriz[i][j] = 0;
+
 			limpar_tela();
 			escrever_Borda(LINHAS,COLUNAS+1,borda_Matriz,3);
 			ler_matriz(LINHAS+1,COLUNAS+1,borda_Matriz,2,0,1,2);
@@ -129,31 +131,35 @@ int main(){
 			exibirPontuacao(pontuacao,5,36,pontuacao_Matriz);
 
 			GerarNovaFormaAleatoriamente();
-			while (!stop) {
+			while (!stop && !pause_game) {
+				if (BUTTON == 2)
+					pausar_game();
+				if (BUTTON == 4)
+					rotacionar();
+				
 				char Buffer[LINHAS][COLUNAS] = {{0}};
 				char matriz_aux[LINHAS][COLUNAS] = {{0}};
-				int i, j;
 
 				for (i = 0; i < LINHAS; i++) 
 					for (j = 0; j < COLUNAS; j++) 
 						matriz_aux[i][j] = Matriz[i][j];
-					
-				
-				
+
+
+
 				for (i = 0; i < forma_atual.largura; i++) 
 					for (j = 0; j < forma_atual.largura; j++) 
 						if (forma_atual.array[i][j])
 							Buffer[forma_atual.linha + i][forma_atual.coluna + j] = forma_atual.array[i][j];
-					
-				
+
+
 
 				for (i = 0; i < LINHAS; i++) 
 					for (j = 0; j < COLUNAS; j++) 
 						if(Buffer[i][j]!=0)
 							matriz_aux[i][j] = Buffer[i][j];
-			
 
-				
+
+
 				ler_matriz(LINHAS,COLUNAS,matriz_aux,2,1,0,2);
 				if (X[0] > 20) {
 					MovimentarForma('d');
@@ -170,20 +176,49 @@ int main(){
 				}
 			}
 			/* Saiu do laço principal, ou seja, game over! */
-			ApagarForma(forma_atual);
 			limpar_tela();
-			draw_game_over_screen();
-			usleep(100000);
-			strcpy(jogadores[0].nome, "ANE");			
-			jogadores[0].pontuacao = pontuacao;
-		}
-	}while(opcao != 0);
+			escrever_GameOver(1,1,1,1,1,1,1,14,25,2);
+			sleep(5);
 
+			limpar_tela();
+			escreverTetris(1,6,5,4,3,4, 10, 2);
+			escreverPressionePB(1,1,1,1,1,1,1,1,1,1,1,4,30,1);
+			BUTTON = 0;
+			while(BUTTON != 1){}
+		}
+	}while(BUTTON != 3);
+
+	pthread_join(button_threads, NULL);
 	pthread_join(accel_working, NULL);
 	desmapear_gpu();
 
 	return 0;
 }
+
+void pausar_game(){
+	while (1) { // pausa o jogo
+		pause_game = 1;
+		escreverPause(1,1,1,1,1,14,25,2);
+		if(BUTTON != 2){
+			BUTTON = 0;
+			pause_game = 0;
+			limpar_tela();
+			escrever_Borda(LINHAS,COLUNAS+1,borda_Matriz,3);
+			ler_matriz(LINHAS+1,COLUNAS+1,borda_Matriz,2,0,1,2);
+			escrever_Pts(1,2,3,4,0,54,1);
+			exibirPontuacao(pontuacao,5,36,pontuacao_Matriz);
+			break;
+		}
+	}
+}
+
+void rotacionar(){
+	while (1) {
+		RotacionarForma(forma_atual);
+			BUTTON = 1;
+			break;
+		}
+	}
 
 /*
  * Função de utilidade responsável por copiar uma peça
@@ -289,7 +324,7 @@ void RemoverLinhaEAtualizarPontuacao() {
 			temporizador -= decrementar--;
 		}
 	}
-	pontuacao += 10000 * contagem;
+	pontuacao += 100 * contagem;
 	exibirPontuacao(pontuacao,5,36,pontuacao_Matriz);
 }
 
@@ -400,29 +435,26 @@ void catchSIGINT(int signum) {
 	stop = 1;
 }
 
-void *button_threads(void *args) {
-	/*
-	KEY_open();
-	while(BUTTON){
-		int teste;
-		KEY_read(&teste);
-		switch (teste) {
-			case 1: // inicia o jogo
-				iniciarjogo = 0;
-				break;
-			case 2: // pausa o jogo
-				if (pausegame == 0 && iniciarjogo == 0){
-					pausegame = 1;
-					break;
-				}
-				else{
-					pausegame = 0;
-					break;
-				}
-			default:
-				break;
+void *button_threads(void *args){
+	int btn = 0;
+	while (LISTEN_BTN) {
+		btn = botoes();
+		btn = (~btn) & 0b1111;
+		if (btn == 1){
+			BUTTON = 1;
+			usleep(200000);
+		}
+		else if (btn == 2){
+			BUTTON = 2;
+			usleep(200000);
+		}
+		else if (btn == 4){
+			BUTTON = 3;
+			usleep(200000);
+		}
+		else if (btn == 8 ){
+			BUTTON = 4;
+			usleep(200000);
 		}
 	}
-	KEY_close();
-	return NULL;*/
 }

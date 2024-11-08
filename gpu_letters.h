@@ -1,4 +1,10 @@
 void definirLetraT(char matriz[5][5]);
+void definirLetraG(char matriz[5][5]);
+void definirLetraA(char matriz[5][5]);
+void definirLetraM(char matriz[5][5]);
+void definirLetraU(char matriz[5][5]);
+void definirLetraV(char matriz[5][5]);
+void definirLetraO(char matriz[5][5]);
 void definirLetraE(char matriz[5][5]);
 void definirLetraR(char matriz[5][5]);
 void definirLetraI(char matriz[5][5]);
@@ -14,3 +20,6 @@ void definirNumero6(char matriz[5][5]);
 void definirNumero7(char matriz[5][5]);
 void definirNumero8(char matriz[5][5]);
 void definirNumero9(char matriz[5][5]);
+void definirLetraJ(char matriz[5][5]);
+void definirLetraB(char matriz[5][5]); 
+void definirLetraN(char matriz[5][5]);
