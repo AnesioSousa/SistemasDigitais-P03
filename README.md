@@ -102,7 +102,7 @@ $ make
 - Ao rotacionar a placa para direita ou esquerda ira mover a peça.
 
 # Conclusão
-Para a realização deste projeto, foi fundamental aplicar conhecimentos de interação entre hardware e software para desenvolvimento do produto finl. A compreensão dos princípios da arquitetura da DE1-SoC, do mapeamento de memória, da programação em assembly e em C, bem como o uso da interface de comunicação I2C, da saída de vídeo VGA e de periféricos como botões, foram essenciais para integrar esses elementos. Ao final, o projeto atingiu os objetivos estabelecidos, proporcionando uma experiência de jogo completa e promovendo o aperfeiçoamento no uso de mapeamento de memória e na programação em assembly. Trabalhar com uma linguagem de baixo nível como assembly trouxe uma nova visão para o desenvolvimento de código, resultando em melhorias no desenvolvimento de software em geral.
+Para a realização deste projeto, foi fundamental aplicar conhecimentos de interação entre hardware e software para desenvolvimento do produto final. A compreensão dos princípios da arquitetura da DE1-SoC, do mapeamento de memória, da programação em assembly e em C, bem como o uso da interface de comunicação I2C, da saída de vídeo VGA e de periféricos como botões, foram essenciais para integrar esses elementos. Ao final, o projeto atingiu os objetivos estabelecidos, proporcionando uma experiência de jogo completa e promovendo o aperfeiçoamento no uso de mapeamento de memória e na programação em assembly. Trabalhar com uma linguagem de baixo nível como assembly trouxe uma nova visão para o desenvolvimento de código, resultando em melhorias no desenvolvimento de software em geral.
 
 
 
