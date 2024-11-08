@@ -1,4 +1,5 @@
-![Tela Inicial do Tetris](main/Imagem%20do%20inicio.jpeg)
+![Tela Inicial do Tetris](./Imagem_do_inicio.jpeg)
+
 
 
 # 🟦🟩🟥🟨 GPU-lib 🟩🟨🟥🟦
