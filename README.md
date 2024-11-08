@@ -1,4 +1,4 @@
-![Tela Inicial do Tetris](AnesioSousa/SistemasDigitais-P02/blob/main/Imagem%20do%20inicio.jpeg)
+![Tela Inicial do Tetris](main/Imagem%20do%20inicio.jpeg)
 
 
 # 🟦🟩🟥🟨 GPU-lib 🟩🟨🟥🟦
