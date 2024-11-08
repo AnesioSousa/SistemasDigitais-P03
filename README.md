@@ -25,6 +25,22 @@ $ make
 ```
 <h3> ⚠ Atenção! O sistema também depende da instalação prévia da biblioteca IntelFPGAUP!</h31>
 
+# Mapeamento de Memoria 
+Para possibilitar o acesso ao acelerômetro (ADXL345) presente na placa DE1-SOC, é necessário mapear a memória física para o espaço de endereçamento virtual. Esse processo envolve duas etapas principais.
+
+## dev/men
+
+## 
+
+# Desenvolvimento
+O projeto foi dividido em módulos para um melhor desenvolvimento. Sendo os modulo um com jogo Tetris, acelerômetro, biblioteca em assembly e algumas funções extras.
+
+## Acelerometro
+Nesse modulo a implementação de comunicação I2C para um acelerômetro (ADXL345), onde o código acessa o dispositivo através do /dev/mem e manipula os registradores diretamente. 
+
+## 
+
+
 <br>
 <br>
 <br>
