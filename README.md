@@ -78,6 +78,20 @@ A manipulação da GPU foi dividida em dois blocos, que são eles:
 ### GPU_letters
 Essa função é responsável pela criação das letras e números em uma submatriz 5x5, letras essas que seram usadas para a criação de textos e pontuações.
 ### GPU_lib
+Nesse módulo é feita chamadas ao assembly para manipular diretamente a GPU, realizando operações de desenho de blocos, sprites e caracteres gráficos em um display. As funções permitem a renderização de elementos gráficos, como letras e números, bem como a configuração e limpeza do background.
+
+## lib.s
+Esse é o módulo com a biblioteca assembly. Contendo um conjunto de funções para realizar operações de mapeamento de memória, manipulando diretamente o espaço de memória e realizando instruções específicas de controle. 
+### Funções principais:
+- mem_map: Abre o arquivo de dispositivo /dev/mem e mapeia uma região de memória para acesso ao FPGA. Armazena o descritor de arquivo para operações futuras.
+- mem_unmap: Desmapeia a região de memória previamente mapeada, liberando o espaço.
+- button: Lê o estado de um botão conectado à FPGA através da memória mapeada.
+- clear_background: Limpa o fundo, enviando instruções para a FPGA que redefinem o estado de memória relacionado ao fundo.
+- set_background_block: Define um bloco de fundo específico em uma posição (linha e coluna) usando parâmetros recebidos, ajustando o estado de memória da FPGA.
+- set_sprite: Define um sprite específico em uma posição, configurando detalhes como localização e opcode.
+- time_is_up: Lê uma posição de memória específica para verificar se o tempo para uma determinada operação expirou.
+- reset_pulsecounter: Reseta um contador de pulsos na FPGA, enviando um comando apropriado para o hardware.
+
 
 
 
