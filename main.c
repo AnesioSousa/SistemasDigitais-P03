@@ -66,7 +66,6 @@ typedef struct {
 Player jogadores[10];
 
 Forma CopiarForma(Forma forma);
-void update_screen(Forma temp);
 void MovimentarForma(int direcao);
 void ExibirTabela();
 void RemoverLinhaEAtualizarPontuacao();
@@ -114,7 +113,7 @@ int main(){
 	pthread_create(&thread_button, NULL, button_threads, NULL);
 	limpar_tela();
 	escreverTetris(1,6,5,4,3,4, 10, 2);
-	escreverPressionePB(1,1,1,1,1,1,1,1,1,1,1,4,30,1);
+	escreverPressionePB(1,1,1,1,1,1,1,1,1,1,1,4, 30, 1);
 
 	do{	
 		stop = 0;
@@ -272,35 +271,7 @@ void MovimentarForma(int direcao) {
 				forma_atual.coluna--;
 			break;
 	}
-	update_screen(temp);
-}
-
-void update_screen(Forma temp) {
 	ApagarForma(temp);
-	ExibirTabela();
-}
-/*
- * Função responsável por exibir no terminal a matriz do game
- **/
-void ExibirTabela() {
-
-	char Buffer[LINHAS][COLUNAS] = {0};
-	int i, j;
-	for (i = 0; i < forma_atual.largura; i++) {
-		for (j = 0; j < forma_atual.largura; j++) {
-			if (forma_atual.array[i][j])
-				Buffer[forma_atual.linha + i][forma_atual.coluna + j] = forma_atual.array[i][j];
-		}
-	}
-	/*for (i = 0; i < COLUNAS - 9; i++)
-	  printf(" ");
-	  printf("Tetris\n");
-	  for (i = 0; i < LINHAS; i++) {
-	  for (j = 0; j < COLUNAS; j++) {
-	  printf("%c ", ((Matriz[i][j] + Buffer[i][j]) ? '#' : '.'));
-	  }  
-	  printf("\n");
-	  }*/
 }
 
 /*
