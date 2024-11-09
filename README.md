@@ -1,4 +1,5 @@
-![Tela Inicial do Tetris](./Imagem_do_inicio.jpeg)
+![Tela Inicial do Tetris](./Imagem%20do%20inicio.jpeg)
+
 
 
 
