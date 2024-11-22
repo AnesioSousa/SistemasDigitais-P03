@@ -12,6 +12,8 @@ void desenhar_quadrado(uint32_t line, uint32_t col, uint32_t B, uint32_t G, uint
 void desenhar_sprite(uint32_t reg, uint32_t x, uint32_t y, uint32_t offset, uint32_t sp);
 int time_is_up();
 void reset_pulsecounter();
+void setar_cor_pixel_sprite(uint32_t endereco, uint32_t B, uint32_t G, uint32_t R);
+
 
 
 void escreverPressionePB(int corP,int corR,int corE,int corS,int corI,int corO,int corN,int corB,int corA,int corJ,int corG,int posX, int posY,int tamanho);

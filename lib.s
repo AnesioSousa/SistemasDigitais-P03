@@ -14,6 +14,7 @@
 .global time_is_up
 .global reset_pulsecounter
 .global button
+.global set_sprite_pixel_color
 
 .type mem_map, %function
 mem_map:
@@ -253,6 +254,52 @@ set_sprite:
     add sp, sp, #12
   
     bx lr
+
+.type set_sprite_pixel_color, %function
+set_sprite_pixel_color:
+    sub sp, sp, #4
+    str r10, [sp, #0]
+     
+    ldr r10, =mem_mapped_file_descriptor
+    ldr r10, [r10]
+    
+    @r0 - endereco
+    @r1 - B
+    @r2 - R
+    @r3 - G
+
+    @Montagem da parte da instrucao que vai para a data_A
+    lsl r0, #4
+    orr r0, #0b0001  @opcode
+    
+    str r0, [r10, #0x80] @escreve em data_A
+    
+    @Montagem da parte da instrucao que vai para a data_B
+    mov r0, r1
+    lsl r0, #3
+    orr r0, r2
+    lsl r0, #3
+    orr r0, r3
+   
+    str r0, [r10, #0x70] @escreve em data_B    
+    
+    sub sp, sp, #4
+    str lr, [sp, #0]
+    bl check_write
+    ldr lr, [sp, #0]
+    add sp, sp, #4
+    
+    mov r0, #0
+    str r0, [r10, #0xc0] @escreve em start_signal
+  
+    mov r0, #1
+    str r0, [r10, #0xc0] @escreve em start_signal
+    
+    ldr r10, [sp, #0]
+    add sp, sp, #4
+  
+    bx lr
+
 
 .type time_is_up, % function
 time_is_up:
