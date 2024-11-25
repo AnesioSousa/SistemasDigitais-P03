@@ -78,29 +78,72 @@ int main(){
     ler_matriz(SIZE1,SIZE2,mapa2,3,1,1,1);
     pacman_AlteraDirecao(pac,1,mapa2);
 
-    //while (gameState!=2)
-    for(i = 0;i<20;i++)    
-      {
-      //pacman_desenha(pac);
-      pacman_movimenta(pac,mapa2);
-      pacman_desenha(pac);
+    // while (gameState!=2)
+    for (i = 0; i < 20; i++)
+    {
+        pacman_movimenta(pac, mapa2);
 
-      ler_matriz(SIZE1,SIZE2,mapa2,3,1,1,1);
-
+        pacman_desenha(pac, mapa2);
+        ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+        printf("x = %d,xj = %d,y = %d, yj = %d, direcao = %d \n", pac->x, pac->xj, pac->y, pac->yj, pac->direcao);
     }
-     pacman_AlteraDirecao(pac,2,mapa2);
-      printf("trocou direcao %d \n",pac->direcao);
-    for(i = 0;i<20;i++)    
-      {
-      //pacman_desenha(pac);
-      pacman_movimenta(pac,mapa2);
-       pacman_desenha(pac);
-         usleep(8000);
+    pacman_AlteraDirecao(pac, 1, mapa2);
+    printf("trocou direcao %d \n", pac->direcao);
 
-      printf("desenha pra esquerda");
-      ler_matriz(SIZE1,SIZE2,mapa2,3,1,1,1);
-      printf("%d \n",pac->pontos);
+    for (i = 0; i < 6; i++)
+    {
+        pacman_movimenta(pac, mapa2);
+        pacman_desenha(pac, mapa2);
+        ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+        printf("x = %d,xj = %d,y = %d, yj = %d \n, direcao = %d", pac->x, pac->xj, pac->y, pac->yj, pac->direcao);
+    }
 
+    pacman_AlteraDirecao(pac, 3, mapa2);
+    printf("trocou direcao %d \n", pac->direcao);
+    for (i = 0; i < 10; i++)
+    {
+        pacman_movimenta(pac, mapa2);
+
+        pacman_desenha(pac, mapa2);
+        usleep(80000);
+
+        ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+        printf("x = %d,xj = %d,y = %d, yj = %d,direcao = %d \n", pac->x, pac->xj, pac->y, pac->yj,pac->direcao);
+    }
+    pacman_AlteraDirecao(pac, 1, mapa2);
+    printf("trocou direcao %d \n", pac->direcao);
+    for (i = 0; i < 20; i++)
+    {
+        pacman_movimenta(pac, mapa2);
+        pacman_desenha(pac, mapa2);
+        usleep(80000);
+
+        ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+        printf("x = %d,xj = %d,y = %d, yj = %d, direcao =  %d \n", pac->x, pac->xj, pac->y, pac->yj,pac->direcao);
+    }
+    pacman_AlteraDirecao(pac, 3, mapa2);
+    printf("trocou direcao %d \n", pac->direcao);
+    for (i = 0; i < 20; i++)
+    {
+        pacman_movimenta(pac, mapa2);
+
+        pacman_desenha(pac, mapa2);
+        usleep(80000);
+
+        ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+        printf("x = %d,xj = %d,y = %d, yj = %d,direcao = %d \n", pac->x, pac->xj, pac->y, pac->yj,pac->direcao);
+    }
+    pacman_AlteraDirecao(pac, 2, mapa2);
+    printf("trocou direcao %d \n", pac->direcao);
+    for (i = 0; i < 20; i++)
+    {
+        pacman_movimenta(pac, mapa2);
+
+        pacman_desenha(pac, mapa2);
+        usleep(80000);
+
+        ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+        printf("x = %d,xj = %d,y = %d, yj = %d,direcao = %d \n", pac->x, pac->xj, pac->y, pac->yj,pac->direcao);
     }
 
 
@@ -111,18 +154,22 @@ int main(){
     desmapear_gpu();
     return 0;
 }
+
+//FUNCOES JOGO
 void iniciarJogo(char map[SIZE1][SIZE2],char mapa2[SIZE1][SIZE2]){
     mapear_gpu();
     limpar_tela();
+    /*matriz de mapa/fundo*/
+    mudarCorGenerico(SIZE1, SIZE2, map, 3);    
+    ler_matriz(SIZE1, SIZE2, map, 3, 0, 0, 3); 
     
-    mudarCorGenerico(SIZE1,SIZE2,map,3);/*TESTAR FUNCIONAMENTO E ORDEM DAS FUNÇÕES DE TROCA DE COR*/
-    ler_matriz(SIZE1,SIZE2,map,3,0,0,3);/*Testar leitura de Matriz */
-
-    copiarMatriz(SIZE1,SIZE2,mapa2,map);
-    
-    invert_map(SIZE1,SIZE2,mapa2);
-    mudarCorGenerico(SIZE1,SIZE2,mapa2,2);
-    mudarCorFundo(SIZE1,SIZE2,mapa2,9);
+    /*matriz de controle/pontos*/
+    copiarMatriz(SIZE1, SIZE2, mapa2, map);
+    invert_map(SIZE1, SIZE2, mapa2);
+    /*neste ponto havera uma funcao que varre a matriz de controle e calcula qual será a quantidade de pontos necessaria para que pacman ganhe*/
+    mudarCorGenerico(SIZE1, SIZE2, mapa2, 2);
+    mudarCorFundo(SIZE1, SIZE2, mapa2, 9);
+    ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
     
     ler_matriz(SIZE1,SIZE2,mapa2,3,1,1,1);
     gameState = 1;
@@ -133,6 +180,14 @@ void iniciarJogo(char map[SIZE1][SIZE2],char mapa2[SIZE1][SIZE2]){
 void encerrarJogo(){
     gameState = 2;
 }
+
+
+
+void desenhar_jogo(char mapa2[SIZE1][SIZE2]){/*por enquanto sem implementação de sprites*/
+   ler_matriz(SIZE1,SIZE2,mapa2,3,1,1,1); 
+}
+
+//FUNCOES PACMAN
 
 // Função que inicializa os dados associados ao pacman
 Pacman* pacman_create(int x, int y){
@@ -157,11 +212,6 @@ Pacman* pacman_create(int x, int y){
 }
     return pac;
 }
-
-void desenhar_jogo(char mapa2[SIZE1][SIZE2]){/*por enquanto sem implementação de sprites*/
-   ler_matriz(SIZE1,SIZE2,mapa2,3,1,1,1); 
-}
-
 int pacman_vivo(Pacman *pac){
     if(pac->vivo)
         return 1;
@@ -195,25 +245,25 @@ void pacman_AlteraDirecao(Pacman* pac,int direcao,char mapa2[SIZE1][SIZE2]){
         pac->direcao = direcao;
         break;
     case 1:
-        if (mapa2[(pac->x)+1][pac->y]!=9)
+        if (mapa2[(pac->x)+1][pac->y]<9)
         {
             pac->direcao = direcao;   
         }
         break;
     case 2:
-        if (mapa2[(pac->x)-1][pac->y]!=9)
+        if (mapa2[(pac->x)-1][pac->y]<9)
         {
             pac->direcao = direcao;
         }
         break;
     case 3:
-        if (mapa2[(pac->x)][pac->y-1]!=9)
+        if (mapa2[(pac->x)][pac->y-1]<9)
         {
             pac->direcao = direcao;
         }
         break;
     case 4:
-        if (mapa2[(pac->x)][pac->y+1]!=9)
+        if (mapa2[(pac->x)][pac->y+1]<9)
         {
             pac->direcao = direcao;
         }
@@ -224,148 +274,235 @@ void pacman_AlteraDirecao(Pacman* pac,int direcao,char mapa2[SIZE1][SIZE2]){
     }
 }
 void pacman_movimenta(Pacman* pac,char mapa2[SIZE1][SIZE2]){
-    if(pac->vivo == 0)
-        return;
     
+    if (pac->vivo == 0)
+        return;
+
     switch (pac->direcao)
     {
     case 0:
+            //pac->xi = pac->x;/*ainda nao sei a necessidade de zerar esses*/
+            //pac->yi = pac->y;
+            pac->xj = pac->x; 
+            pac->yj = pac->y;
+            pontuaVerif(pac, mapa2);
+            posicionarPacman(((pac->x)), (pac->y), mapa2);
+
         break;
     case 3:
-        if (mapa2[(pac->x)+1][pac->y]<9)
+        if (mapa2[(pac->x) + 1][pac->y] < 9)
         {
-            pac->xi=pac->x;
-            pac->yi=pac->y;
-            
-            pac->xj=pac->x+1;
-            pac->yj=pac->y;
-            
-            pontuaVerif(pac,mapa2);
-            posicionarPacman(((pac->x)+1),(pac->y),mapa2);
+            pac->xi = pac->x;
+            pac->yi = pac->y;
+
+            pac->xj = pac->x + 2;
+            pac->yj = pac->y;
+
+            pontuaVerif(pac, mapa2);
+            posicionarPacman(((pac->x) + 1), (pac->y), mapa2);
         }
-        else{
+        else
+        {
             pac->direcao = 0;
-            }
+
+        }
         break;
     case 4:
-        if (mapa2[(pac->x)-1][pac->y]<9)
+        if (mapa2[(pac->x) - 1][pac->y] < 9)
         {
-            pac->xi=pac->x;
-            pac->yi=pac->y;
-            pac->xj=pac->x-1;
-            pac->yj=pac->y;
- 
+            pac->xi = pac->x;
+            pac->yi = pac->y;
+            pac->xj = pac->x - 2;
+            pac->yj = pac->y;
 
-            pontuaVerif(pac,mapa2);
-            posicionarPacman(((pac->x)-1),(pac->y),mapa2);
-        }        
-        else{
+            pontuaVerif(pac, mapa2);
+            posicionarPacman(((pac->x) - 1), (pac->y), mapa2);
+        }
+        else
+        {
             pac->direcao = 0;
-            }
+        }
         break;
     case 2:
-        if (mapa2[(pac->x)][pac->y-1]<9)
+        if (mapa2[(pac->x)][(pac->y) - 1] < 9)
         {
-            pac->xi=pac->x;
-            pac->yi=pac->y;
-            pac->xj=pac->x;
-            pac->yj=pac->y-1;
- 
+            pac->xi = pac->x;
+            pac->yi = pac->y;
+            pac->xj = pac->x;
+            pac->yj = pac->y - 2;
 
-            pontuaVerif(pac,mapa2);
-            posicionarPacman(((pac->x)),(pac->y-1),mapa2);
+            pontuaVerif(pac, mapa2);
+            posicionarPacman(((pac->x)), (pac->y - 1), mapa2);
         }
-        else{
+        else
+        {
             pac->direcao = 0;
         }
 
         break;
     case 1:
-        if (mapa2[(pac->x)][pac->y+1]<9)
+        if (mapa2[(pac->x)][(pac->y) + 1] < 9)
         {
-            pac->xi=pac->x;
-            pac->yi=pac->y;
-            pac->xj=pac->x;
-            pac->yj=pac->y+1;
- 
+            pac->xi = pac->x;
+            pac->yi = pac->y;
+            pac->xj = pac->x;
+            pac->yj = pac->y + 2;
 
-            pontuaVerif(pac,mapa2);
-            posicionarPacman(((pac->x)),(pac->y+1),mapa2);
+            pontuaVerif(pac, mapa2);
+            posicionarPacman(((pac->x)), (pac->y + 1), mapa2);
         }
-       else{
+        else
+        {
             pac->direcao = 0;
-            }
-        break;
         }
-mapa2[(pac->xi)][pac->yi]=0;
+        break;
+    }
+    mapa2[(pac->xi)][pac->yi] = 0;
+}
+
+int temParede(Pacman *pac, char mapa2[SIZE1][SIZE2])
+{/* essa funcao nao esta sendo utilizada */
+    if (mapa2[pac->x + 1][pac->y] < 9 && pac->direcao == 3)
+    {
+        return 0;
+    }
+    else if (mapa2[pac->x][pac->y + 1] < 9 && pac->direcao == 1)
+    {
+        return 0;
+    }
+    else if (mapa2[pac->x - 1][pac->y] < 9 && pac->direcao == 4)
+    {
+        return 0;
+    }
+    else if (mapa2[pac->x][pac->y - 1] < 9 && pac->direcao == 2)
+    {
+        return 0;
+    }
+    printf("tem parede");
+    return 1;
 }
 
 void pacman_desenha(Pacman* pac){
-      int i;
+     /*funcao responsavel pela animacao de pacman*/
+    /*por enquanto nao utiliza sprites*/
+    int i;
+   /* 
+    if (temParede(pac, mapa2))
+    {
+        printf("achou parede e nao desenhou");
+        return;
+    }*/
+    
 
-      if(pac->direcao==1){
-      for(i=0;i<(pac->passo)-1;i++){      
-        {
-          desenhar_quadrado(((pac->x)*3)+1,(i+1)+(pac->yi)*3,0,0,0,1);
-          desenhar_quadrado(((pac->x)*3)+1,(i+1)+(pac->yi+1)*3,7,0,7,1);
-          usleep(80000);
-          desenhar_quadrado(((pac->x)*3)+1,(i+1)+(pac->yi+1)*3,0,0,0,1); 
-        }   
-      }
-}
-      if(pac->direcao==2){
-            printf("entrou \n");
-       for(i=0;i<(pac->passo)-1;i++){      
-        {
-          desenhar_quadrado(((pac->x)*3)+1,(i+1)+(pac->yi)*3,0,0,0,1);
-          desenhar_quadrado(((pac->x)*3)+1,(i+1)+(pac->yi-1)*3,7,0,7,1);
-          usleep(800000);
-          printf("delay");
-          desenhar_quadrado(((pac->x)*3)+1,(i+1)+(pac->yi-1)*3,0,0,0,1); 
-        }   
-      }
+    if (pac->direcao == 0)
+    {/*espero que conserte o problema de atravessar parede*/
+        return;
     }
-  }
-
-void invert_map(int size1,int size2,char map[size1][size2]){
-    int i,j;
-    for ( i = 0; i < size1; i++) {
-        for ( j = 0; j < size2; j++) {
-            map[i][j] = 1 - map[i][j];
+    
+    if (pac->direcao == 1 && pac->yj < 18 && pac->yj > 0 && pac->y != pac->yj && mapa2[pac->x][pac->yj]<9)
+    { /*move para frente*/
+        for (i = 0; i < (pac->passo) - 1; i++)
+        {
+            {
+                desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi) * 3, 0, 0, 0, 1);
+                desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi + 1) * 3, 7, 0, 7, 1);
+                usleep(80000);
+                desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi + 1) * 3, 0, 0, 0, 1);
+            }
         }
     }
-};
-void mudarCorFundo(int linhas, int colunas,char matriz[linhas][colunas],int cor){
-    int i,j;
-    for ( i = 0; i < linhas; i++)
-    {
-        for ( j = 0; j < colunas; j++)
+
+    if (pac->direcao == 2 && pac->yj > 0 && pac->yj < 18 && pac->y != pac->yj && mapa2[pac->x][pac->yj]<9)
+    { /*move para tras*/
+        for (i = (pac->passo) - 1; i > 0; i--)
         {
-           if (matriz[i][j]==0)
-           {
-            matriz[i][j]=cor;
-           }  
-        }    
-    } 
+            {
+                desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi) * 3, 0, 0, 0, 1);
+                desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi - 1) * 3, 7, 0, 7, 1);
+                usleep(80000);
+                desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi - 1) * 3, 0, 0, 0, 1);
+            }
+        }
+    }
+
+    if (pac->direcao == 3 && pac->xj < 13 && pac->xj > 0 && pac->x != pac->xj && mapa2[pac->xj][pac->y]<9)
+    { /*move para baixo*/
+        for (i = 0; i < (pac->passo) - 1; i++)
+        {
+            {
+                desenhar_quadrado((i + 1) + (pac->xi) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
+                desenhar_quadrado((i + 1) + (pac->xi + 1) * 3, ((pac->y) * 3) + 1, 7, 0, 7, 1);
+                usleep(80000);
+                desenhar_quadrado((i + 1) + (pac->xi + 1) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
+            }
+        }
+    }
+
+    if (pac->direcao == 4 && pac->xj > 0 && pac->xj < 13 && pac->x != pac->xj && mapa2[pac->xj-1][pac->y]<9)
+    { /*move para cima*/
+        for (i = (pac->passo) - 1; i > 0; i--)
+        {
+            {
+                desenhar_quadrado((i + 1) + (pac->xi) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
+                desenhar_quadrado((i + 1) + (pac->xi - 1) * 3, ((pac->y) * 3) + 1, 7, 0, 7, 1);
+                usleep(80000);
+                desenhar_quadrado((i + 1) + (pac->xi - 1) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
+            }
+        }
+    }
 }
 
-void mudarCorGenerico(int linhas, int colunas,char matriz[linhas][colunas],int cor){
-    int i,j;
-    for ( i = 0; i < linhas; i++)
-    {
-        for ( j = 0; j < colunas; j++)
-        {
-           if (matriz[i][j]==1)
-           {
-            matriz[i][j]=cor;
-           }  
-        }    
-    } 
+void trocarStatus(Pacman *pac){/*status diz qual sprite sera utilizado*/
+    /*funcao ainda nao implementada*/
+    pac->status = 1- pac->status;
 }
 
+
+//FUNCOES AUXILIARES
 void print_map(char map[SIZE1][SIZE2]) {
     for (int i = 0; i < SIZE1; i++) {
         for (int j = 0; j < SIZE2; j++) {
+            printf("%d ", map[i][j]);
+        }
+        printf("\n");
+    }
+}
+void mudarCorFundo(int linhas, int colunas, char matriz[linhas][colunas], int cor)
+{
+    int i, j;
+    for (i = 0; i < linhas; i++)
+    {
+        for (j = 0; j < colunas; j++)
+        {
+            if (matriz[i][j] == 0)
+            {
+                matriz[i][j] = cor;
+            }
+        }
+    }
+}
+
+void mudarCorGenerico(int linhas, int colunas, char matriz[linhas][colunas], int cor)
+{
+    int i, j;
+    for (i = 0; i < linhas; i++)
+    {
+        for (j = 0; j < colunas; j++)
+        {
+            if (matriz[i][j] == 1)
+            {
+                matriz[i][j] = cor;
+            }
+        }
+    }
+}
+
+void print_map(char map[SIZE1][SIZE2])
+{
+    for (int i = 0; i < SIZE1; i++)
+    {
+        for (int j = 0; j < SIZE2; j++)
+        {
             printf("%d ", map[i][j]);
         }
         printf("\n");
