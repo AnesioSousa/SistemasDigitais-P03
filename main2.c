@@ -44,7 +44,15 @@ void pontuaVerif(Pacman* pac,char mapa2[SIZE1][SIZE2]);
 void pacman_AlteraDirecao(Pacman* pac,int direcao,char mapa2[SIZE1][SIZE2]);
 void pacman_movimenta(Pacman* pac,char mapa2[SIZE1][SIZE2]);
 
+Phantom *phantom_create(int x, int y);
+void phantom_destroy(Phantom *ph);
+void posicionarPhantom(int x, int y, char mapa2[SIZE1][SIZE2]);
+void phantom_movimenta(Phantom *ph, char mapa2[SIZE1][SIZE2]);
+void phantom_desenha(Phantom *ph, char mapa2[SIZE1][SIZE2]);
+void trocarStatusPhantom(Phantom *ph);
+
 Pacman *pac;
+Phantom *ph;
 int gameState = 0;
 
 int main(){
@@ -455,6 +463,190 @@ void pacman_desenha(Pacman* pac){
 void trocarStatus(Pacman *pac){/*status diz qual sprite sera utilizado*/
     /*funcao ainda nao implementada*/
     pac->status = 1- pac->status;
+}
+
+// FUNCOES PHANTOM
+//  Função que inicializa os dados associados ao phantom
+Phantom *phantom_create(int x, int y)
+{
+
+    Phantom *ph = malloc(sizeof(Phantom));
+    if (ph != NULL)
+    {
+        ph->pontos = 0;
+        ph->passo = 4;
+        ph->vivo = 1;
+        ph->status = 0;
+        ph->direcao = 0; /*vou definir que 0 = parado; 1 = direita,2 = esquerda,3 = p/ cima,4 = p/baixo*/
+        ph->parcial = 0;
+        ph->x = x;
+        ph->y = y;
+        ph->xi = x;
+        ph->yi = y;
+        ph->xj = x;
+        ph->yj = y;
+    }
+    return ph;
+}
+
+void phantom_destroy(Phantom *ph)
+{
+    free(ph);
+}
+
+void posicionarPhantom(int x, int y, char mapa2[SIZE1][SIZE2])
+{
+    ph->x = x;
+    ph->y = y;
+    mapa2[x][y] = 7; /*Numero que representa o phantom na matriz de controle(mapa2)*/
+}
+
+void phantom_movimenta(Phantom *ph, char mapa2[SIZE1][SIZE2])
+{
+    if (ph->vivo == 0)
+        return;
+
+    switch (ph->direcao)
+    {
+    case 0:
+        ph->xj = ph->x;
+        ph->yj = ph->y;
+
+        posicionarPhantom(((ph->x)), (ph->y), mapa2);
+
+        break;
+    case 3:
+        if (mapa2[(ph->x) + 1][ph->y] < 9)
+        {
+            ph->xi = ph->x;
+            ph->yi = ph->y;
+
+            ph->xj = ph->x + 2;
+            ph->yj = ph->y;
+
+            posicionarPhantom(((ph->x) + 1), (ph->y), mapa2);
+        }
+        else
+        {
+            ph->direcao = 0;
+        }
+        break;
+    case 4:
+        if (mapa2[(ph->x) - 1][ph->y] < 9)
+        {
+            ph->xi = ph->x;
+            ph->yi = ph->y;
+            ph->xj = ph->x - 2;
+            ph->yj = ph->y;
+
+            posicionarPhantom(((ph->x) - 1), (ph->y), mapa2);
+        }
+        else
+        {
+            ph->direcao = 0;
+        }
+        break;
+    case 2:
+        if (mapa2[(ph->x)][(ph->y) - 1] < 9)
+        {
+            ph->xi = ph->x;
+            ph->yi = ph->y;
+            ph->xj = ph->x;
+            ph->yj = ph->y - 2;
+
+            posicionarPhantom(((ph->x)), (ph->y - 1), mapa2);
+        }
+        else
+        {
+            ph->direcao = 0;
+        }
+
+        break;
+    case 1:
+        if (mapa2[(ph->x)][(ph->y) + 1] < 9)
+        {
+            ph->xi = ph->x;
+            ph->yi = ph->y;
+            ph->xj = ph->x;
+            ph->yj = ph->y + 2;
+
+            posicionarPhantom(((ph->x)), (ph->y + 1), mapa2);
+        }
+        else
+        {
+            ph->direcao = 0;
+        }
+        break;
+    }
+    /*fantasma nao apaga blocos*/
+}
+
+void phantom_desenha(Phantom *ph, char mapa2[SIZE1][SIZE2])
+{ /*funcao responsavel pela animacao de phantom*/
+    /*por enquanto nao utiliza sprites*/
+    int i;
+
+    if (ph->direcao == 0)
+    {
+        return;
+    }
+
+    if (ph->direcao == 1 && ph->yj < 18 && ph->yj > 0 && ph->y != ph->yj && mapa2[ph->x][ph->yj] < 9)
+    { /*move para frente*/
+        for (i = 0; i < (ph->passo) - 1; i++)
+        {
+            {
+                desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi) * 3, 0, 0, 0, 1);
+                desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi + 1) * 3, 7, 7, 7, 1);
+                usleep(80000);
+                desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi + 1) * 3, 0, 0, 0, 1);
+            }
+        }
+    }
+
+    if (ph->direcao == 2 && ph->yj > 0 && ph->yj < 18 && ph->y != ph->yj && mapa2[ph->x][ph->yj] < 9)
+    { /*move para tras*/
+        for (i = (ph->passo) - 1; i > 0; i--)
+        {
+            {
+                desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi) * 3, 0, 0, 0, 1);
+                desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi - 1) * 3, 7, 7, 7, 1);
+                usleep(80000);
+                desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi - 1) * 3, 0, 0, 0, 1);
+            }
+        }
+    }
+
+    if (ph->direcao == 3 && ph->xj < 13 && ph->xj > 0 && ph->x != ph->xj && mapa2[ph->xj][ph->y] < 9)
+    { /*move para baixo*/
+        for (i = 0; i < (ph->passo) - 1; i++)
+        {
+            {
+                desenhar_quadrado((i + 1) + (ph->xi) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
+                desenhar_quadrado((i + 1) + (ph->xi + 1) * 3, ((ph->y) * 3) + 1, 7, 7, 7, 1);
+                usleep(80000);
+                desenhar_quadrado((i + 1) + (ph->xi + 1) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
+            }
+        }
+    }
+
+    if (ph->direcao == 4 && ph->xj > 0 && ph->xj < 13 && ph->x != ph->xj && mapa2[ph->xj - 1][ph->y] < 9)
+    { /*move para cima*/
+        for (i = (ph->passo) - 1; i > 0; i--)
+        {
+            {
+                desenhar_quadrado((i + 1) + (ph->xi) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
+                desenhar_quadrado((i + 1) + (ph->xi - 1) * 3, ((ph->y) * 3) + 1, 7, 7, 7, 1);
+                usleep(80000);
+                desenhar_quadrado((i + 1) + (ph->xi - 1) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
+            }
+        }
+    }
+}
+
+void trocarStatusPhantom(Phantom *ph)
+{ /*status diz qual sprite sera utilizado*/
+    ph->status = 1 - ph->status;
 }
 
 
