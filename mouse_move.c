@@ -1,5 +1,6 @@
 #include "mouse_move.h"
-#include <math.h>
+#include <unistd.h>
+#include <stdlib.h>
 
 
 int fd_mouse = 0;
@@ -8,6 +9,7 @@ int16_t pos_y = 0;
 uint8_t left = 0;
 uint8_t middle = 0;
 uint8_t right = 0;
+int8_t data[3];
 
 /**
  * \brief           Usada para abrir o arquivo de drive do mouse
@@ -58,18 +60,18 @@ void mouse_movement(int *action, int *power_amount)
     {
         pos_x = 0;
     }
-    if (pos_x > 620)
+    if (pos_x > 640)
     {
-        pos_x = 620;
+        pos_x = 640;
     }
 
     if (pos_y < 0)
     {
         pos_y = 0;
     }
-    if (pos_y > 460)
+    if (pos_y > 480)
     {
-        pos_y = 460;
+        pos_y = 480;
     }
 }
 
