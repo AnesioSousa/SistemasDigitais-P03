@@ -73,6 +73,7 @@ int gameState = 0;
 int pacMaxPts;
 
 char pontuacao_Matriz[5][36];
+char mapa3[SIZE1][SIZE2] = {{0}};
 int main()
 {
     pthread_t thread_accel;
@@ -104,9 +105,49 @@ int main()
     iniciarJogo(map, mapa2);
     pac = pacman_create(1, 1);
     posicionarPacman(1, 1, mapa2);
+	
     ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
     
+    ph = phantom_create(13,18);
+    posicionarPhantom(13,18,mapa3);
 
+    // teste de game_over
+    /*
+        pacman_AlteraDirecao(pac, 1, mapa2);
+        phantom_AlteraDirecao(ph, 1, mapa3);
+
+            for (i = 0; i < 20; i++)
+        {
+            pacman_movimenta(pac, mapa2);
+            pacman_desenha(pac, mapa2);
+            ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+
+            phantom_movimenta(ph, mapa3);
+            phantom_desenha(ph, mapa3);
+
+
+            printf("x = %d,xj = %d,y = %d, yj = %d, direcao = %d \n", pac->x, pac->xj, pac->y, pac->yj, pac->direcao);
+        }
+
+        phantom_AlteraDirecao(ph, 4, mapa3);
+
+         for (i = 0; i < 20; i++)
+        {
+            pacman_movimenta(pac, mapa2);
+            pacman_desenha(pac, mapa2);
+            ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+
+            phantom_movimenta(ph, mapa3);
+            phantom_desenha(ph, mapa3);
+
+        if(pacman_vivo(pac)){}
+        else{
+            pac->vivo =0;
+            encerrarJogo();
+            break;
+            }
+            printf("x = %d,xj = %d,y = %d, yj = %d, direcao = %d \n", pac->x, pac->xj, pac->y, pac->yj, pac->direcao);
+        }*/
     while (gameState!=2){
         desenhar_jogo(mapa2);
     }
@@ -134,6 +175,8 @@ void iniciarJogo(char map[SIZE1][SIZE2], char mapa2[SIZE1][SIZE2])
     copiarMatriz(SIZE1, SIZE2, mapa2, map);
     invert_map(SIZE1, SIZE2, mapa2);
 
+    copiarMatriz(SIZE1, SIZE2, mapa3, mapa2);/*criei essa matriz que é uma copia da matriz de controle para controlar o fantasma sem interferir na matriz de controle que será exibida*/
+					     /*essa terceira matriz nao interfere na condição de vitoria do fantasma uma vez que ela se baseia nas cordenadas dentro da struct*/
     pacMaxPts = contarMaxPts(SIZE1,SIZE2,mapa2); /*define a condição de vitoria de pac*/
     
     mudarCorGenerico(SIZE1, SIZE2, mapa2, 2);
@@ -147,22 +190,43 @@ void encerrarJogo()
 {/*por enquanto nao diferencia quem ganhou*/
     
     gameState = 2;
+    escrever_GameOver(1, 1, 1, 1, 1, 1, 1, 14, 25, 2); /*provisorio*/
+}
+
+/*esse tipo de funcao pode ser replicado para o mouse*/
+int pegar_direcaoPac()
+{ /*no momento retorna somente o X*/
+    int di;
+    if (X[0] > 20)
+    {
+        di = 1;
+    }
+    else if (X[0] < -20)
+    {
+        di = 2;
+    }
+    else
+        di = 0;
+    printf("%d \n", X[0]);
+    return di;
 }
 
 void desenhar_jogo(char mapa2[SIZE1][SIZE2])
 { /*por enquanto sem implementação de sprites*/
-    int di;
-    if (X[0] > 20) {
-			di =1;
-		} else if (X[0] < -20) {
-			di=2;
-		}
+    int di = pegar_direcaoPac();
     if (pacman_vivo(pac))
     {/*a condição de morte de pacman esta implementada em phantom_movimenta*/
+
 
         pacman_AlteraDirecao(pac, di, mapa2);
         pacman_movimenta(pac, mapa2);
         pacman_desenha(pac, mapa2);
+
+        ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+
+        phantom_AlteraDirecao(ph, di, mapa3);
+        phantom_movimenta(ph, mapa3);
+        phantom_desenha(ph, mapa3);
 
     }else{/*vitoria do fantasma nao implementada*/
         encerrarJogo();
@@ -173,7 +237,7 @@ void desenhar_jogo(char mapa2[SIZE1][SIZE2])
         encerrarJogo();
     }
     
-    ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+    //ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
     exibirPontuacao(pac->pontos, 5, 36, pontuacao_Matriz);
 }
 
@@ -510,6 +574,43 @@ void posicionarPhantom(int x, int y, char mapa2[SIZE1][SIZE2])
     mapa2[x][y] = 7; /*Numero que representa o phantom na matriz de controle(mapa2)*/
 }
 
+void phantom_AlteraDirecao(Phantom *ph, int direcao, char mapa2[SIZE1][SIZE2])
+{
+    switch (ph->direcao)
+    {
+    case 0:
+        ph->direcao = direcao;
+        break;
+    case 1:
+        if (mapa2[(ph->x) + 1][ph->y] < 9)
+        {
+            ph->direcao = direcao;
+        }
+        break;
+    case 2:
+        if (mapa2[(ph->x) - 1][ph->y] < 9)
+        {
+            ph->direcao = direcao;
+        }
+        break;
+    case 3:
+        if (mapa2[(ph->x)][ph->y - 1] < 9)
+        {
+            ph->direcao = direcao;
+        }
+        break;
+    case 4:
+        if (mapa2[(ph->x)][ph->y + 1] < 9)
+        {
+            ph->direcao = direcao;
+        }
+        break;
+    default:
+        ph->direcao = 0;
+        break;
+    }
+}
+
 void phantom_movimenta(Phantom *ph, char mapa2[SIZE1][SIZE2])
 {
     if (ph->vivo == 0)
@@ -588,11 +689,12 @@ void phantom_movimenta(Phantom *ph, char mapa2[SIZE1][SIZE2])
         break;
     }
     /*fantasma nao apaga blocos*/
+    /* troquei essa funcao de lugar para deixar a animacao mais fluida
     if (ph->x == pac->x && ph ->y == pac->y)
     {
         pac->vivo = 0;
     }
-    
+    */
 }
 
 void phantom_desenha(Phantom *ph, char mapa2[SIZE1][SIZE2])
@@ -660,7 +762,10 @@ void phantom_desenha(Phantom *ph, char mapa2[SIZE1][SIZE2])
             }
         }
     }
-
+    if (ph->x == pac->x && ph->y == pac->y)
+    {
+        pac->vivo = 0;
+    }
 }
 
 void trocarStatusPhantom(Phantom *ph)
