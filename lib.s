@@ -332,6 +332,65 @@ reset_pulsecounter:
     
     bx lr
 
+.type set_polygon, % function
+set_polygon:
+    @param ponto_ref_x
+    ldr r8, [sp, #12]
+    @param ponto_ref_y
+    ldr r6, [sp, #8]
+    @param tamanho
+    ldr r5, [sp, #4]
+    @param R
+    ldr r4, [sp, #0]
+
+    sub sp, sp, #20
+    str r10 [sp, #16]
+    
+    ldr r10,=mem_mapped_file_descriptor
+    ldr r10, [r10]
+
+    @Montagem da parte da instrucao que vai para a data_A
+    lsl r0, #4
+    @opcode
+    orr r0, #0b0011
+    str r10, [sp, #0]
+
+    str r0, [r10, #0x80] @escreve em data_A
+    
+    lsl r0, #1
+    orr r0, r1  @ adicionando forma  
+    lsl r0, #3 
+    orr r0, r2  @ adicionando B 
+    lsl r0, #3 
+    orr r0, r3  @ adicionando G
+    lsl r0, #3 
+    orr r0, r4  @ adicionando R
+    lsl r0, #4 
+    orr r0, r5  @ adicionando tamanho
+    lsl r0, #9 
+    orr r0, r6  @ adicionando ponto_ref_y
+    lsl r0, #9 
+    orr r0, r8  @ adicionando ponto_ref_x
+   
+    str r0, [r10, #0x70] @escreve em data_B    
+    
+    sub sp, sp, #4
+    str lr, [sp, #0]
+    bl check_write
+    ldr lr, [sp, #0]
+    add sp, sp, #4
+    
+    mov r0, #0
+    str r0, [r10, #0xc0] @escreve em start_signal
+  
+    mov r0, #1
+    str r0, [r10, #0xc0] @escreve em start_signal
+    
+    ldr r10, [sp, #0]
+    add sp, sp, #16
+  
+    bx lr
+
 error:
     mov r0, #1
     ldr r1, =failed
