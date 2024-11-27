@@ -1,4 +1,5 @@
 #include "acelerometro.c"
+#include "mouse_move.c"
 #include "gpu_lib.h"
 #include <pthread.h>
 #include <fcntl.h>
@@ -38,18 +39,36 @@ typedef struct{
 	int active;
 } Sprite_Fixed;
 
-int main(){
-	mapear_gpu();
-	limpar_tela();
+int action = 0;
+int power_amount = 1;
 
+
+void *mouse_working(void *args) {
+	while(1){
+		mouse_movement(&action, &power_amount);
+		set_sprite(1, pos_x, pos_y,1,1);
+	}	
+}
+
+int main(){
+	open_mouse_device();
+	mapear_gpu();
+
+	limpar_tela();
 	clear_poligonos();
 	clear_sprites();
+
+
+	
+	pthread_t thread_mouse;
+	pthread_create(&thread_mouse, NULL, mouse_working, NULL);
+
 	Sprite sprt_1;
-	sprt_1.data_register  = 1;  sprt_1.coord_x = 300;  sprt_1.coord_y = 200;  sprt_1.offset = 0; sprt_1.active = 1; 
+	sprt_1.data_register  = 1;  sprt_1.coord_x = 300;  sprt_1.coord_y = 200;  sprt_1.offset = 5; sprt_1.active = 1; 
 
 	//while(1){ 
-	//	if(time_is_up() == 0) {
-	//		set_sprite(sprt_1.data_register, sprt_1.coord_x, sprt_1.coord_y, sprt_1.offset, sprt_1.active); 
+	//	if(renderizou() == 0) {
+			set_sprite(sprt_1.data_register, sprt_1.coord_x, sprt_1.coord_y, sprt_1.offset, sprt_1.active); 
 	//		break; 
 	//	}
 	//}
@@ -86,7 +105,9 @@ int main(){
 	}
 
 	pthread_join(thread_accel, NULL);*/
+	pthread_join(thread_mouse, NULL);
 	desmapear_gpu();
+	close_mouse_device();
 	return 0;
 }
 
@@ -103,6 +124,5 @@ void *accel_working(void *args) {
 			accelerometer_x_read(X, regs); // lê os dados do eixo x
 	return NULL;
 }
-
 
 

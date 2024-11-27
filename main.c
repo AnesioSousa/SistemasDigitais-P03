@@ -22,6 +22,17 @@ void mudarCorGenerico(int linhas, int colunas, char matriz[linhas][colunas], int
 void iniciarJogo(char map[SIZE1][SIZE2], char mapa2[SIZE1][SIZE2]);
 void encerrarJogo();
 
+
+
+
+#define LEFT   		 0
+#define UPPER_RIGHT  1
+#define UP 			 2
+#define UPPER_LEFT   3
+#define RIGHT  		 4
+#define BOTTOM_LEFT  5
+#define DOWN         6
+#define BOTTOM_RIGHT 7
 typedef struct TPacman {
     int status;
     int x, y, xi, yi, xj, yj;
@@ -40,6 +51,19 @@ typedef struct TPhantom {
     int vivo;
     int animacao;
 } Phantom;
+
+typedef struct{
+	int coord_x;          //current x-coordinate of the sprite on screen.
+	int coord_y;          //current y-coordinate of the sprite on screen.
+	int direction;        //variable that defines the sprite's movement angle.
+	int offset;           //Variable that defines the sprite's memory offset. Used to choose which animation to use.
+	int data_register;    //Variable that defines in which register the data relating to the sprite will be stored.
+	int step_x; 		  //Number of steps the sprite moves on the X axis.
+	int step_y; 		  //Number of steps the sprite moves on the Y axis.
+	int ativo;
+	int collision;        // 0 - without collision , 1 - collision detected
+} Sprite;
+
 
 int pacman_vivo(Pacman *pac);
 Pacman *pacman_create(int x, int y);
@@ -72,11 +96,15 @@ int pacMaxPts;
 
 char pontuacao_Matriz[5][36];
 char mapa3[SIZE1][SIZE2] = {{0}};
+
 int main() {
+    mapear_gpu();
     pthread_t thread_accel;
     inicializacao_accel();
     pthread_create(&thread_accel, NULL, accel_working, NULL);
-    // clear_poligonos()
+    clear_poligonos();
+    clear_sprites();
+
     //desenhar_poligono(1,1,1,1,1,1,1,1);
 
     char map[SIZE1][SIZE2] = {
@@ -97,7 +125,9 @@ int main() {
         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
     char mapa2[SIZE1][SIZE2] = {{0}};
     int start, i, j;
-// clear_sprites();
+
+    Sprite sprt_2;
+	
     printf("iniciar jogo?\n");
     scanf("%d", &start);
 
@@ -107,9 +137,12 @@ int main() {
 
     ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
 
+    sprt_2.ativo = 1; sprt_2.data_register  = 2;  sprt_2.coord_x = 620;  sprt_2.coord_y = 0;  sprt_2.offset = 1;
+    
     ph = phantom_create(13, 18);
     posicionarPhantom(13, 18, mapa3);
-
+	
+	
     /* teste de game_over
  	   
         pacman_AlteraDirecao(pac, 1, mapa2);
@@ -147,8 +180,11 @@ int main() {
             }
             printf("x = %d,xj = %d,y = %d, yj = %d, direcao = %d \n", pac->x, pac->xj, pac->y, pac->yj, pac->direcao);
         }*/
+   
+    sprt_2.direction = RIGHT;
     while (gameState != 2) {
-        desenhar_jogo(mapa2);
+        increase_coordinate(sprt_2,1);
+	desenhar_jogo(mapa2);
     }
 
     print_map(mapa2);
@@ -162,7 +198,6 @@ int main() {
 // FUNCOES JOGO
 
 void iniciarJogo(char map[SIZE1][SIZE2], char mapa2[SIZE1][SIZE2]) {
-    mapear_gpu();
     limpar_tela();
     /*matriz de mapa/fundo*/
     mudarCorGenerico(SIZE1, SIZE2, map, 3);
@@ -731,4 +766,126 @@ void *accel_working(void *args) {
         if (accelereometer_isDataReady(regs))
             accelerometer_x_read(X, regs); // lê os dados do eixo x
     return NULL;
+}
+
+
+void increase_coordinate(Sprite *sp, int mirror){
+	switch((*sp).direction){
+		case LEFT:                   							//0 degrees
+			(*sp).coord_x -= (*sp).step_x; 						
+			if(mirror == 1){
+				if((*sp).coord_x < 1){                          //Mirrors the sprite's position when it reaches the left edge of the screen.
+					(*sp).coord_x = 640;
+				}
+			}else {
+				if((*sp).coord_x < 1){
+					(*sp).coord_x = 1;
+				}
+			}
+			break;
+		case UPPER_RIGHT:                                       //45 degrees
+			(*sp).coord_x += (*sp).step_x; 						
+			(*sp).coord_y -= (*sp).step_y; 						
+			if(mirror == 1){
+				if((*sp).coord_y < 0){                          //Mirrors the sprite's position when it reaches the upper limit of the screen.
+					(*sp).coord_y = 480;
+				}else if((*sp).coord_x > 640){                  //Mirrors the sprite's position when it reaches the right edge of the screen.
+					(*sp).coord_x = 0;	
+				}
+			}else{
+				if((*sp).coord_y < 0){
+					(*sp).coord_y = 0;
+				}else if((*sp).coord_x > 640){
+					(*sp).coord_x = 640;
+				}
+			}
+			break;
+		case UP:                                                //90 degrees
+			(*sp).coord_y -= (*sp).step_y; 						
+			if(mirror == 1){
+				if((*sp).coord_y < 0){                          //Mirrors the sprite's position when it reaches the upper limit of the screen.
+					(*sp).coord_y = 480;
+				}
+			}else{
+				if((*sp).coord_y < 0){
+					(*sp).coord_y = 0;
+				}			
+			}
+			break;
+		case UPPER_LEFT:          							    //135 degrees
+			(*sp).coord_x -= (*sp).step_x; 						
+			(*sp).coord_y -= (*sp).step_y; 						
+			if(mirror == 1){
+				if((*sp).coord_y < 0){                          //Mirrors the sprite's position when it reaches the upper limit of the screen.
+					(*sp).coord_y = 480;
+				}else if((*sp).coord_x < 1){                    //Mirrors the sprite's position when it reaches the left edge of the screen.
+					(*sp).coord_x = 640;
+				}
+			}else{
+				if((*sp).coord_y < 0){
+					(*sp).coord_y = 0;
+				}else if((*sp).coord_x < 1){
+					(*sp).coord_x = 1;
+				}
+			}
+			break;
+		case RIGHT:          									//180 degrees
+			(*sp).coord_x += (*sp).step_x; 						//Atualiza a coordenada X.
+			if(mirror == 1){
+				if((*sp).coord_x > 640){                        //Mirrors the sprite's position when it reaches the right edge of the screen.
+					(*sp).coord_x = 0;
+				}
+			}else{
+				if((*sp).coord_x > 620){
+					(*sp).coord_x = 620;
+				}
+			}
+			break;
+		case BOTTOM_LEFT:          								//225 degrees
+			(*sp).coord_x -= (*sp).step_x; 						
+			(*sp).coord_y += (*sp).step_y; 						
+			if(mirror == 1){
+				if((*sp).coord_y > 480){                        //Mirrors the sprite's position when it reaches the lower limit of the screen.
+					(*sp).coord_y = 0;
+				}else if((*sp).coord_x < 1){                    //Mirrors the sprite's position when it reaches the left edge of the screen.
+					(*sp).coord_x = 640;
+				}
+			}else{
+				if((*sp).coord_y > 480){
+					(*sp).coord_y = 480;
+				}else if((*sp).coord_x < 1){
+					(*sp).coord_x = 1;
+				}
+			}
+			break;
+		case DOWN:                                              //270 graus (pra baixo)
+			(*sp).coord_y += (*sp).step_y; 						
+			if(mirror == 1){
+				if((*sp).coord_y > 480){                        //Mirrors the sprite's position when it reaches the lower limit of the screen.
+					(*sp).coord_y = 0;
+				}
+			}else{
+				if((*sp).coord_y > 480){
+					(*sp).coord_y = 480;
+				}
+			}
+			break;
+		case BOTTOM_RIGHT:                                      //315 degrees
+			(*sp).coord_x += (*sp).step_x; 						
+			(*sp).coord_y += (*sp).step_y; 						
+			if(mirror == 1){
+				if((*sp).coord_y > 480){                        //Mirrors the sprite's position when it reaches the lower limit of the screen.
+					(*sp).coord_y = 0;
+				}else if((*sp).coord_x > 640){                  //Mirrors the sprite's position when it reaches the right edge of the screen.
+					(*sp).coord_x = 0;
+				}
+			}else{
+				if((*sp).coord_y > 480){
+					(*sp).coord_y = 480;
+				}else if((*sp).coord_x > 640){
+					(*sp).coord_x = 640;
+				}
+			}
+			break;
+	}
 }

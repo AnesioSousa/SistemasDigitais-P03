@@ -2,7 +2,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-
 int fd_mouse = 0;
 int16_t pos_x = 0;
 int16_t pos_y = 0;
@@ -74,4 +73,3 @@ void mouse_movement(int *action, int *power_amount)
         pos_y = 480;
     }
 }
-

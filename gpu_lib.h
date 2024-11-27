@@ -14,7 +14,7 @@ int time_is_up();
 void reset_pulsecounter();
 void setar_cor_pixel_sprite(uint32_t endereco, uint32_t B, uint32_t G, uint32_t R);
 void clear_sprites();
-
+void clear_poligonos();
 
 void escreverPressionePB(int corP,int corR,int corE,int corS,int corI,int corO,int corN,int corB,int corA,int corJ,int corG,int posX, int posY,int tamanho);
 void escreverPause(int corP,int corA,int corU,int corS,int corE,int posX, int posY,int tamanho);
