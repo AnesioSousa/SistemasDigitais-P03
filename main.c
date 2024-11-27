@@ -1,15 +1,3 @@
-/*
- * Universidade Estadual de Feira de Santana
- * TEC499 - MI - SISTEMAS DIGITAIS - 2024.2
- * Engenharia de Computação - Departamento de Tecnologia (DTEC)
- * Discentes: Anésio Neto, Caick Wendell, Caike Dylon
- * Docente: Ângelo Duarte
- **/
-
-#define LINHAS 20
-#define COLUNAS 15
-#define TRUE 1
-#define FALSE 0
 
 #include "acelerometro.c"
 #include "gpu_lib.h"
@@ -25,174 +13,710 @@
 #include <time.h>
 #include <unistd.h>
 
-typedef struct {
-    char **array;
-    int largura, linha, coluna;
-    int cor;
-} Forma;
+#define SIZE2 20
+#define SIZE1 15
 
-const int VetorDeCores[4] = {1, 2, 3, 4};
-int fd, decrementar = 1000, pontuacao, pause_game = 0, LISTEN_BTN = 1, ACCEL = 1, BUTTON = 0;
-static int16_t X[1];
-volatile sig_atomic_t stop;
-struct timeval before_now, now;
-char pontuacao_Matriz[5][36], Matriz[LINHAS][COLUNAS], borda_Matriz[LINHAS + 1][COLUNAS + 1] = {{0}};
-I2C_Registers regs;
-Forma forma_atual;
-suseconds_t temporizador = 400000; // é só diminuir esse valor pro jogo executar mais rápido
+void invert_map(int size1, int size2, char map[size1][size2]);
+void mudarCorFundo(int linhas, int colunas, char matriz[linhas][colunas], int cor);
+void mudarCorGenerico(int linhas, int colunas, char matriz[linhas][colunas], int cor);
+void iniciarJogo(char map[SIZE1][SIZE2], char mapa2[SIZE1][SIZE2]);
+void encerrarJogo();
 
-Forma CopiarForma(Forma forma);
-void MovimentarForma(int direcao);
-void RemoverLinhaEAtualizarPontuacao();
-void SobrescreverMatriz();
-void GerarNovaFormaAleatoriamente();
-int ChecarPosicao(Forma forma);
-void ApagarForma(Forma forma);
-int temQueAtualizar();
-void RotacionarForma(Forma forma);
-void catchSIGINT(int signum);
-void *button_threads(void *args);
+typedef struct TPacman {
+    int status;
+    int x, y, xi, yi, xj, yj;
+    int direcao, passo, parcial;
+    int pontos;
+    int invencivel;
+    int vivo;
+    int animacao;
+} Pacman;
+
+typedef struct TPhantom {
+    int status;
+    int x, y, xi, yi, xj, yj;
+    int direcao, passo, parcial;
+    int pontos;
+    int vivo;
+    int animacao;
+} Phantom;
+
+int pacman_vivo(Pacman *pac);
+Pacman *pacman_create(int x, int y);
+void desenhar_jogo(char mapa2[SIZE1][SIZE2]);
+int pacman_vivo(Pacman *pac);
+void pacman_destroy(Pacman *pac);
+void posicionarPacman(int x, int y, char mapa2[SIZE1][SIZE2]);
+void pontuaVerif(Pacman *pac, char mapa2[SIZE1][SIZE2]);
+void pacman_AlteraDirecao(Pacman *pac, int direcao, char mapa2[SIZE1][SIZE2]);
+void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]);
+
+Phantom *phantom_create(int x, int y);
+void phantom_destroy(Phantom *ph);
+void posicionarPhantom(int x, int y, char mapa2[SIZE1][SIZE2]);
+void phantom_movimenta(Phantom *ph, char mapa2[SIZE1][SIZE2]);
+void phantom_desenha(Phantom *ph, char mapa2[SIZE1][SIZE2]);
+void trocarStatusPhantom(Phantom *ph);
+
+/*accel test*/
 void inicializacao_accel();
 void *accel_working(void *args);
-void limpar_matriz();
-void pausar_game();
-void rotacionar();
-void mudarCorArray(int linhas, int colunas, Forma forma, int cor);
+int ACCEL = 1, fd;
+I2C_Registers regs;
+static int16_t X[1];
+//---------------------------------
+Pacman *pac;
+Phantom *ph;
+int gameState = 0;
+int pacMaxPts;
 
-/* Definição das peças */
-const Forma VetorDeFormas[7] = {
-    {// formato S
-     (char *[]){
-         (char[]){0, 1, 1},
-         (char[]){1, 1, 0},
-         (char[]){0, 0, 0}},
-     3}, // formato Z
-    {
-        (char *[]){
-            (char[]){1, 1, 0},
-            (char[]){0, 1, 1},
-            (char[]){0, 0, 0}},
-        3}, // formato T
-    {
-        (char *[]){
-            (char[]){0, 1, 0},
-            (char[]){1, 1, 1},
-            (char[]){0, 0, 0}},
-        3}, // formato L
-    {
-        (char *[]){
-            (char[]){0, 0, 1},
-            (char[]){1, 1, 1},
-            (char[]){0, 0, 0}},
-        3}, // formato L invertido
-    {
-        (char *[]){
-            (char[]){1, 0, 0},
-            (char[]){1, 1, 1},
-            (char[]){0, 0, 0}},
-        3}, // formato quadrado
-    {
-        (char *[]){
-            (char[]){1, 1},
-            (char[]){1, 1}},
-        2}, // formato vareta
-    {
-        (char *[]){
-            (char[]){0, 0, 0, 0},
-            (char[]){1, 1, 1, 1},
-            (char[]){0, 0, 0, 0},
-            (char[]){0, 0, 0, 0}},
-        4}};
-
+char pontuacao_Matriz[5][36];
+char mapa3[SIZE1][SIZE2] = {{0}};
 int main() {
-    int i, j;
-    pthread_t thread_button;
     pthread_t thread_accel;
-
-    srand(time(0));
-    gettimeofday(&before_now, NULL);
-
-    mapear_gpu();
     inicializacao_accel();
-
     pthread_create(&thread_accel, NULL, accel_working, NULL);
-    pthread_create(&thread_button, NULL, button_threads, NULL);
+    // clear_poligonos()
+    //desenhar_poligono(1,1,1,1,1,1,1,1);
 
-    limpar_tela();
-    escreverTetris(1, 6, 5, 4, 3, 4, 10, 2);
-    escreverPressionePB(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 30, 1);
+    char map[SIZE1][SIZE2] = {
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1},
+        {1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1},
+        {1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1},
+        {1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1},
+        {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1},
+        {1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1},
+        {1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1},
+        {1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+        {1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
+    char mapa2[SIZE1][SIZE2] = {{0}};
+    int start, i, j;
+// clear_sprites();
+    printf("iniciar jogo?\n");
+    scanf("%d", &start);
 
-    do {
-        stop = 0;
-        pontuacao = 0;
-        if (BUTTON == 1) {
-            limpar_matriz();
-            limpar_tela();
-            escrever_Borda(LINHAS, COLUNAS + 1, borda_Matriz, 3);
-            ler_matriz(LINHAS + 1, COLUNAS + 1, borda_Matriz, 2, 0, 1, 2);
-            escrever_Pts(1, 2, 3, 4, 0, 54, 1);
-            exibirPontuacao(pontuacao, 5, 36, pontuacao_Matriz);
+    iniciarJogo(map, mapa2);
+    pac = pacman_create(1, 1);
+    posicionarPacman(1, 1, mapa2);
 
-            GerarNovaFormaAleatoriamente();
-            while (!stop && !pause_game) {
-                if (BUTTON == 2)
-                    pausar_game();
-                if (BUTTON == 4)
-                    rotacionar();
+    ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
 
-                char Buffer[LINHAS][COLUNAS] = {{0}};
-                char matriz_aux[LINHAS][COLUNAS] = {{0}};
+    ph = phantom_create(13, 18);
+    posicionarPhantom(13, 18, mapa3);
 
-                for (i = 0; i < LINHAS; i++)
-                    for (j = 0; j < COLUNAS; j++)
-                        matriz_aux[i][j] = Matriz[i][j];
+    /* teste de game_over
+ 	   
+        pacman_AlteraDirecao(pac, 1, mapa2);
+        phantom_AlteraDirecao(ph, 1, mapa3);
 
-                for (i = 0; i < forma_atual.largura; i++)
-                    for (j = 0; j < forma_atual.largura; j++)
-                        if (forma_atual.array[i][j])
-                            Buffer[forma_atual.linha + i][forma_atual.coluna + j] = forma_atual.array[i][j];
+            for (i = 0; i < 20; i++)
+        {
+            pacman_movimenta(pac, mapa2);
+            pacman_desenha(pac, mapa2);
+            ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
 
-                for (i = 0; i < LINHAS; i++)
-                    for (j = 0; j < COLUNAS; j++)
-                        if (Buffer[i][j] != 0)
-                            matriz_aux[i][j] = Buffer[i][j];
+            phantom_movimenta(ph, mapa3);
+            phantom_desenha(ph, mapa3);
 
-                ler_matriz(LINHAS, COLUNAS, matriz_aux, 2, 1, 0, 2);
-                if (X[0] > 20) {
-                    MovimentarForma('d');
-                    usleep(80000);
-                } else if (X[0] < -20) {
-                    MovimentarForma('a');
-                    usleep(80000);
-                }
 
-                gettimeofday(&now, NULL);
-                if (temQueAtualizar()) {
-                    MovimentarForma('s');
-                    gettimeofday(&before_now, NULL);
-                }
-            }
-            /* Saiu do laço principal, ou seja, game over! */
-            limpar_tela();
-            escrever_GameOver(1, 1, 1, 1, 1, 1, 1, 14, 25, 2);
-            sleep(5);
-
-            limpar_tela();
-            escreverTetris(1, 6, 5, 4, 3, 4, 10, 2);
-            escreverPressionePB(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 30, 1);
-            BUTTON = 0;
-            while (BUTTON != 1) {
-            }
+            printf("x = %d,xj = %d,y = %d, yj = %d, direcao = %d \n", pac->x, pac->xj, pac->y, pac->yj, pac->direcao);
         }
-    } while (BUTTON != 3);
 
-    LISTEN_BTN = 0;
-    ACCEL = 0;
-    pthread_join(thread_button, NULL);
+        phantom_AlteraDirecao(ph, 4, mapa3);
+
+         for (i = 0; i < 20; i++)
+        {
+            pacman_movimenta(pac, mapa2);
+            pacman_desenha(pac, mapa2);
+            ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+
+            phantom_movimenta(ph, mapa3);
+            phantom_desenha(ph, mapa3);
+
+        if(pacman_vivo(pac)){}
+        else{
+            pac->vivo =0;
+            encerrarJogo();
+            break;
+            }
+            printf("x = %d,xj = %d,y = %d, yj = %d, direcao = %d \n", pac->x, pac->xj, pac->y, pac->yj, pac->direcao);
+        }*/
+    while (gameState != 2) {
+        desenhar_jogo(mapa2);
+    }
+
+    print_map(mapa2);
+    encerrarJogo();
+
     pthread_join(thread_accel, NULL);
     desmapear_gpu();
-
     return 0;
+}
+
+// FUNCOES JOGO
+
+void iniciarJogo(char map[SIZE1][SIZE2], char mapa2[SIZE1][SIZE2]) {
+    mapear_gpu();
+    limpar_tela();
+    /*matriz de mapa/fundo*/
+    mudarCorGenerico(SIZE1, SIZE2, map, 3);
+    ler_matriz(SIZE1, SIZE2, map, 3, 0, 0, 3);
+
+    /*matriz de controle/pontos*/
+    copiarMatriz(SIZE1, SIZE2, mapa2, map);
+    invert_map(SIZE1, SIZE2, mapa2);
+
+    copiarMatriz(SIZE1, SIZE2, mapa3, mapa2);      /*criei essa matriz que é uma copia da matriz de controle para controlar o fantasma sem interferir na matriz de controle que será exibida*/
+                                                   /*essa terceira matriz nao interfere na condição de vitoria do fantasma uma vez que ela se baseia nas cordenadas dentro da struct*/
+    pacMaxPts = contarMaxPts(SIZE1, SIZE2, mapa2); /*define a condição de vitoria de pac*/
+
+    mudarCorGenerico(SIZE1, SIZE2, mapa2, 2);
+    mudarCorFundo(SIZE1, SIZE2, mapa2, 9);
+    ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+
+    gameState = 1;
+}
+
+void encerrarJogo() { /*por enquanto nao diferencia quem ganhou*/
+
+    gameState = 2;
+    escrever_GameOver(1, 1, 1, 1, 1, 1, 1, 14, 25, 2); /*provisorio*/
+}
+
+/*esse tipo de funcao pode ser replicado para o mouse*/
+int pegar_direcaoPac() { /*no momento retorna somente o X*/
+    int di;
+    if (X[0] > 20) {
+        di = 1;
+    } else if (X[0] < -20) {
+        di = 2;
+    } else
+        di = 0;
+    printf("%d \n", X[2]);
+    return di;
+}
+
+void desenhar_jogo(char mapa2[SIZE1][SIZE2]) { /*por enquanto sem implementação de sprites*/
+    int di = pegar_direcaoPac();
+    if (pacman_vivo(pac)) { /*a condição de morte de pacman esta implementada em phantom_movimenta*/
+
+        pacman_AlteraDirecao(pac, di, mapa2);
+        pacman_movimenta(pac, mapa2);
+        pacman_desenha(pac, mapa2);
+
+        ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+/*
+        phantom_AlteraDirecao(ph, di, mapa3);
+        phantom_movimenta(ph, mapa3);
+        phantom_desenha(ph, mapa3);
+*/
+    } else { /*vitoria do fantasma nao implementada*/
+        encerrarJogo();
+    }
+
+    if (pac->pontos == pacMaxPts) {
+        encerrarJogo();
+    }
+
+    // ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+    exibirPontuacao(pac->pontos, 5, 36, pontuacao_Matriz);
+}
+
+int contarMaxPts(int size1, int size2, char map[size1][size2]) { /*funcao que contabiliza a quantidade de pontos necessária para que pacman ganhe*/
+    int i, j, count;
+    for (i = 0; i < size1; i++) {
+        for (j = 0; j < size2; j++) {
+            if (map[i][j] == 1) {
+                count++;
+            }
+        }
+    }
+    return count * 10;
+};
+// FUNCOES PACMAN
+
+int pacman_vivo(Pacman *pac) {
+    if (pac->vivo)
+        return 1;
+    else {
+        return 0;
+    }
+}
+
+// Função que inicializa os dados associados ao pacman
+Pacman *pacman_create(int x, int y) {
+
+    Pacman *pac = malloc(sizeof(Pacman));
+    if (pac != NULL) {
+        pac->invencivel = 0;
+        pac->pontos = 0;
+        pac->passo = 4;
+        pac->vivo = 1;
+        pac->status = 0;
+        pac->direcao = 0; /*vou definir que 0 = parado; 1 = direita,2 = esquerda,3 = p/ cima,4 = p/baixo*/
+        pac->parcial = 0;
+        pac->x = x;
+        pac->y = y;
+        pac->xi = x;
+        pac->yi = y;
+        pac->xj = x;
+        pac->yj = y;
+    }
+    return pac;
+}
+
+void pacman_destroy(Pacman *pac) {
+    free(pac);
+}
+
+void posicionarPacman(int x, int y, char mapa2[SIZE1][SIZE2]) {
+    pac->x = x;
+    pac->y = y;
+    mapa2[x][y] = 6; /*Numero que representa o pacman na matriz de controle(mapa2)*/
+    desenhar_sprite(1,1+((pac->y) * 3)*8,((pac->x) * 3)*8,1,1);	
+  //desenhar_sprite(1, ((i + 1) + (pac->yi + 1) * 3)*8,(((pac->x) * 3) + 1)*8-7,1,1);	
+
+}
+
+void pontuaVerif(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
+    if (mapa2[pac->xj][pac->yj] == 2) {
+        mapa2[pac->xi][pac->yi] = 0; /*atualiza o valor da posicao anterior de pac caso ele pontue*/
+        pac->pontos += 10;
+    }
+}
+
+void pacman_AlteraDirecao(Pacman *pac, int direcao, char mapa2[SIZE1][SIZE2]) {
+    switch (pac->direcao) {
+    case 0:
+        pac->direcao = direcao;
+        break;
+    case 1:
+        if (mapa2[(pac->x) + 1][pac->y] < 9) {
+            pac->direcao = direcao;
+        }
+        break;
+    case 2:
+        if (mapa2[(pac->x) - 1][pac->y] < 9) {
+            pac->direcao = direcao;
+        }
+        break;
+    case 3:
+        if (mapa2[(pac->x)][pac->y - 1] < 9) {
+            pac->direcao = direcao;
+        }
+        break;
+    case 4:
+        if (mapa2[(pac->x)][pac->y + 1] < 9) {
+            pac->direcao = direcao;
+        }
+        break;
+    default:
+        pac->direcao = 0;
+        break;
+    }
+}
+void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
+    if (pac->vivo == 0)
+        return;
+
+    switch (pac->direcao) {
+    case 0:
+        pac->xj = pac->x;
+        pac->yj = pac->y;
+
+        pontuaVerif(pac, mapa2);
+        posicionarPacman(((pac->x)), (pac->y), mapa2);
+
+        break;
+    case 3:
+        if (mapa2[(pac->x) + 1][pac->y] < 9) {
+            pac->xi = pac->x;
+            pac->yi = pac->y;
+
+            pac->xj = pac->x + 2;
+            pac->yj = pac->y;
+
+            pontuaVerif(pac, mapa2);
+            posicionarPacman(((pac->x) + 1), (pac->y), mapa2);
+        } else {
+            pac->direcao = 0;
+        }
+        break;
+    case 4:
+        if (mapa2[(pac->x) - 1][pac->y] < 9) {
+            pac->xi = pac->x;
+            pac->yi = pac->y;
+
+            pac->xj = pac->x - 2;
+            pac->yj = pac->y;
+
+            pontuaVerif(pac, mapa2);
+            posicionarPacman(((pac->x) - 1), (pac->y), mapa2);
+        } else {
+            pac->direcao = 0;
+        }
+        break;
+    case 2:
+        if (mapa2[(pac->x)][(pac->y) - 1] < 9) {
+            pac->xi = pac->x;
+            pac->yi = pac->y;
+
+            pac->xj = pac->x;
+            pac->yj = pac->y - 2;
+
+            pontuaVerif(pac, mapa2);
+            posicionarPacman(((pac->x)), (pac->y - 1), mapa2);
+        } else {
+            pac->direcao = 0;
+        }
+
+        break;
+    case 1:
+        if (mapa2[(pac->x)][(pac->y) + 1] < 9) {
+            pac->xi = pac->x;
+            pac->yi = pac->y;
+
+            pac->xj = pac->x;
+            pac->yj = pac->y + 2;
+
+            pontuaVerif(pac, mapa2);
+            posicionarPacman(((pac->x)), (pac->y + 1), mapa2);
+        } else {
+            pac->direcao = 0;
+        }
+        break;
+    }
+    mapa2[(pac->xi)][pac->yi] = 0;
+}
+
+int temParede(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*nao esta sendo utilizada*/
+    if (mapa2[pac->x + 1][pac->y] < 9 && pac->direcao == 3) {
+        return 0;
+    } else if (mapa2[pac->x][pac->y + 1] < 9 && pac->direcao == 1) {
+        return 0;
+    } else if (mapa2[pac->x - 1][pac->y] < 9 && pac->direcao == 4) {
+        return 0;
+    } else if (mapa2[pac->x][pac->y - 1] < 9 && pac->direcao == 2) {
+        return 0;
+    }
+    // printf("tem parede");
+    return 1;
+}
+
+void pacman_desenha(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*funcao responsavel pela animacao de pacman*/
+    /*por enquanto nao utiliza sprites*/
+    int i;
+    /*
+     if (temParede(pac, mapa2))
+     {
+         printf("achou parede e nao desenhou");
+         return;
+     }*/
+
+    if (pac->direcao == 0) { /*nao move*/
+        return;
+    }
+
+    if (pac->direcao == 1 && pac->yj < 17 && pac->yj > 0 && pac->y != pac->yj && mapa2[pac->x][pac->yj] < 9) { /*move para frente*/
+        for (i = 0; i < (pac->passo) - 1; i++) {
+            {
+               // desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi) * 3, 0, 0, 0, 1);
+                //desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi + 1) * 3, 7, 0, 7, 1);
+                usleep(80000);
+               // desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi + 1) * 3, 0, 0, 0, 1);
+		desenhar_sprite(1, ((i + 1) + (pac->yi + 1) * 3)*8,(((pac->x) * 3) + 1)*8-7,1,1);	
+                trocarStatus(pac);
+            }
+        }
+    }
+
+    if (pac->direcao == 2 && pac->yj > 0 && pac->yj < 18 && pac->y != pac->yj && mapa2[pac->x][pac->yj] < 9) { /*move para tras*/
+        for (i = (pac->passo) - 1; i > 0; i--) {
+            {
+                desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi) * 3, 0, 0, 0, 1);
+                desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi - 1) * 3, 7, 0, 7, 1);
+                usleep(80000);
+                desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi - 1) * 3, 0, 0, 0, 1);
+                
+		desenhar_sprite(1, ((i + 1) + (pac->yi - 1) * 3)*8,(((pac->x) * 3) + 1)*8-7,1,1);	
+
+		trocarStatus(pac);
+            }
+        }
+    }
+
+    if (pac->direcao == 3 && pac->xj < 13 && pac->xj > 0 && pac->x != pac->xj && mapa2[pac->xj][pac->y] < 9) { /*move para baixo*/
+        for (i = 0; i < (pac->passo) - 1; i++) {
+            {
+                desenhar_quadrado((i + 1) + (pac->xi) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
+                desenhar_quadrado((i + 1) + (pac->xi + 1) * 3, ((pac->y) * 3) + 1, 7, 0, 7, 1);
+                usleep(80000);
+                desenhar_quadrado((i + 1) + (pac->xi + 1) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
+                trocarStatus(pac);
+            }
+        }
+    }
+
+    if (pac->direcao == 4 && pac->xj > 0 && pac->xj < 13 && pac->x != pac->xj && mapa2[pac->xj - 1][pac->y] < 9) { /*move para cima*/
+        for (i = (pac->passo) - 1; i > 0; i--) {
+            {
+                desenhar_quadrado((i + 1) + (pac->xi) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
+                desenhar_quadrado((i + 1) + (pac->xi - 1) * 3, ((pac->y) * 3) + 1, 7, 0, 7, 1);
+                usleep(80000);
+                desenhar_quadrado((i + 1) + (pac->xi - 1) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
+                trocarStatus(pac);
+            }
+        }
+    }
+}
+
+void trocarStatus(Pacman *pac) { /*status diz qual sprite sera utilizado*/
+    pac->status = 1 - pac->status;
+}
+
+// FUNCOES PHANTOM
+//  Função que inicializa os dados associados ao phantom
+Phantom *phantom_create(int x, int y) {
+
+    Phantom *ph = malloc(sizeof(Phantom));
+    if (ph != NULL) {
+        ph->pontos = 0;
+        ph->passo = 4;
+        ph->vivo = 1;
+        ph->status = 0;
+        ph->direcao = 0; /*vou definir que 0 = parado; 1 = direita,2 = esquerda,3 = p/ cima,4 = p/baixo*/
+        ph->parcial = 0;
+        ph->x = x;
+        ph->y = y;
+        ph->xi = x;
+        ph->yi = y;
+        ph->xj = x;
+        ph->yj = y;
+    }
+    return ph;
+}
+
+void phantom_destroy(Phantom *ph) {
+    free(ph);
+}
+
+void posicionarPhantom(int x, int y, char mapa2[SIZE1][SIZE2]) {
+    ph->x = x;
+    ph->y = y;
+    mapa2[x][y] = 7; /*Numero que representa o phantom na matriz de controle(mapa2)*/
+}
+
+void phantom_AlteraDirecao(Phantom *ph, int direcao, char mapa2[SIZE1][SIZE2]) {
+    switch (ph->direcao) {
+    case 0:
+        ph->direcao = direcao;
+        break;
+    case 1:
+        if (mapa2[(ph->x) + 1][ph->y] < 9) {
+            ph->direcao = direcao;
+        }
+        break;
+    case 2:
+        if (mapa2[(ph->x) - 1][ph->y] < 9) {
+            ph->direcao = direcao;
+        }
+        break;
+    case 3:
+        if (mapa2[(ph->x)][ph->y - 1] < 9) {
+            ph->direcao = direcao;
+        }
+        break;
+    case 4:
+        if (mapa2[(ph->x)][ph->y + 1] < 9) {
+            ph->direcao = direcao;
+        }
+        break;
+    default:
+        ph->direcao = 0;
+        break;
+    }
+}
+
+void phantom_movimenta(Phantom *ph, char mapa2[SIZE1][SIZE2]) {
+    if (ph->vivo == 0)
+        return;
+
+    switch (ph->direcao) {
+    case 0:
+        ph->xj = ph->x;
+        ph->yj = ph->y;
+
+        posicionarPhantom(((ph->x)), (ph->y), mapa2);
+
+        break;
+    case 3:
+        if (mapa2[(ph->x) + 1][ph->y] < 9) {
+            ph->xi = ph->x;
+            ph->yi = ph->y;
+
+            ph->xj = ph->x + 2;
+            ph->yj = ph->y;
+
+            posicionarPhantom(((ph->x) + 1), (ph->y), mapa2);
+        } else {
+            ph->direcao = 0;
+        }
+        break;
+    case 4:
+        if (mapa2[(ph->x) - 1][ph->y] < 9) {
+            ph->xi = ph->x;
+            ph->yi = ph->y;
+            ph->xj = ph->x - 2;
+            ph->yj = ph->y;
+
+            posicionarPhantom(((ph->x) - 1), (ph->y), mapa2);
+        } else {
+            ph->direcao = 0;
+        }
+        break;
+    case 2:
+        if (mapa2[(ph->x)][(ph->y) - 1] < 9) {
+            ph->xi = ph->x;
+            ph->yi = ph->y;
+            ph->xj = ph->x;
+            ph->yj = ph->y - 2;
+
+            posicionarPhantom(((ph->x)), (ph->y - 1), mapa2);
+        } else {
+            ph->direcao = 0;
+        }
+
+        break;
+    case 1:
+        if (mapa2[(ph->x)][(ph->y) + 1] < 9) {
+            ph->xi = ph->x;
+            ph->yi = ph->y;
+            ph->xj = ph->x;
+            ph->yj = ph->y + 2;
+
+            posicionarPhantom(((ph->x)), (ph->y + 1), mapa2);
+        } else {
+            ph->direcao = 0;
+        }
+        break;
+    }
+    /*fantasma nao apaga blocos*/
+    /* troquei essa funcao de lugar para deixar a animacao mais fluida
+    if (ph->x == pac->x && ph ->y == pac->y)
+    {
+        pac->vivo = 0;
+    }
+    */
+}
+
+void phantom_desenha(Phantom *ph, char mapa2[SIZE1][SIZE2]) { /*funcao responsavel pela animacao de phantom*/
+    /*por enquanto nao utiliza sprites*/
+    int i;
+
+    if (ph->direcao == 0) {
+        return;
+    }
+
+    if (ph->direcao == 1 && ph->yj < 18 && ph->yj > 0 && ph->y != ph->yj && mapa2[ph->x][ph->yj] < 9) { /*move para frente*/
+        for (i = 0; i < (ph->passo) - 1; i++) {
+            {
+                desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi) * 3, 0, 0, 0, 1);
+                desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi + 1) * 3, 7, 7, 7, 1);
+                usleep(80000);
+                desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi + 1) * 3, 0, 0, 0, 1);
+                trocarStatusPhantom(ph);
+            }
+        }
+    }
+
+    if (ph->direcao == 2 && ph->yj > 0 && ph->yj < 18 && ph->y != ph->yj && mapa2[ph->x][ph->yj] < 9) { /*move para tras*/
+        for (i = (ph->passo) - 1; i > 0; i--) {
+            {
+                desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi) * 3, 0, 0, 0, 1);
+                desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi - 1) * 3, 7, 7, 7, 1);
+                usleep(80000);
+                desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi - 1) * 3, 0, 0, 0, 1);
+                trocarStatusPhantom(ph);
+            }
+        }
+    }
+
+    if (ph->direcao == 3 && ph->xj < 13 && ph->xj > 0 && ph->x != ph->xj && mapa2[ph->xj][ph->y] < 9) { /*move para baixo*/
+        for (i = 0; i < (ph->passo) - 1; i++) {
+            {
+                desenhar_quadrado((i + 1) + (ph->xi) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
+                desenhar_quadrado((i + 1) + (ph->xi + 1) * 3, ((ph->y) * 3) + 1, 7, 7, 7, 1);
+                usleep(80000);
+                desenhar_quadrado((i + 1) + (ph->xi + 1) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
+                trocarStatusPhantom(ph);
+            }
+        }
+    }
+
+    if (ph->direcao == 4 && ph->xj > 0 && ph->xj < 13 && ph->x != ph->xj && mapa2[ph->xj - 1][ph->y] < 9) { /*move para cima*/
+        for (i = (ph->passo) - 1; i > 0; i--) {
+            {
+                desenhar_quadrado((i + 1) + (ph->xi) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
+                desenhar_quadrado((i + 1) + (ph->xi - 1) * 3, ((ph->y) * 3) + 1, 7, 7, 7, 1);
+                usleep(80000);
+                desenhar_quadrado((i + 1) + (ph->xi - 1) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
+                trocarStatusPhantom(ph);
+            }
+        }
+    }
+    if (ph->x == pac->x && ph->y == pac->y) {
+        pac->vivo = 0;
+    }
+}
+
+void trocarStatusPhantom(Phantom *ph) { /*status diz qual sprite sera utilizado*/
+    ph->status = 1 - ph->status;
+}
+
+// FUNCOES AUXILIARES
+void invert_map(int size1, int size2, char map[size1][size2]) {
+    int i, j;
+    for (i = 0; i < size1; i++) {
+        for (j = 0; j < size2; j++) {
+            map[i][j] = 1 - map[i][j];
+        }
+    }
+};
+void mudarCorFundo(int linhas, int colunas, char matriz[linhas][colunas], int cor) {
+    int i, j;
+    for (i = 0; i < linhas; i++) {
+        for (j = 0; j < colunas; j++) {
+            if (matriz[i][j] == 0) {
+                matriz[i][j] = cor;
+            }
+        }
+    }
+}
+
+void mudarCorGenerico(int linhas, int colunas, char matriz[linhas][colunas], int cor) {
+    int i, j;
+    for (i = 0; i < linhas; i++) {
+        for (j = 0; j < colunas; j++) {
+            if (matriz[i][j] == 1) {
+                matriz[i][j] = cor;
+            }
+        }
+    }
+}
+
+void print_map(char map[SIZE1][SIZE2]) {
+    for (int i = 0; i < SIZE1; i++) {
+        for (int j = 0; j < SIZE2; j++) {
+            printf("%d ", map[i][j]);
+        }
+        printf("\n");
+    }
 }
 
 void inicializacao_accel() {
@@ -206,244 +730,5 @@ void *accel_working(void *args) {
     while (ACCEL)
         if (accelereometer_isDataReady(regs))
             accelerometer_x_read(X, regs); // lê os dados do eixo x
-    return NULL;
-}
-
-void pausar_game() {
-    while (1) { // pausa o jogo
-        pause_game = 1;
-        escreverPause(1, 1, 1, 1, 1, 14, 25, 2);
-        if (BUTTON != 2) {
-            BUTTON = 0;
-            pause_game = 0;
-            limpar_tela();
-            escrever_Borda(LINHAS, COLUNAS + 1, borda_Matriz, 3);
-            ler_matriz(LINHAS + 1, COLUNAS + 1, borda_Matriz, 2, 0, 1, 2);
-            escrever_Pts(1, 2, 3, 4, 0, 54, 1);
-            exibirPontuacao(pontuacao, 5, 36, pontuacao_Matriz);
-            break;
-        }
-    }
-}
-
-void limpar_matriz() {
-    int i, j;
-
-    for (i = 0; i < LINHAS; i++)
-        for (j = 0; j < COLUNAS; j++)
-            Matriz[i][j] = 0;
-}
-
-void rotacionar() {
-  while (1) {
-    RotacionarForma(forma_atual);
-    BUTTON = 1;
-    break;
-  }
-}
-
-/*
- * Função de utilidade responsável por copiar uma peça
- * @param forma - Peça a ser copiada
- **/
-Forma CopiarForma(Forma forma) {
-    Forma nova_forma = forma;
-    char **aux = forma.array;
-    nova_forma.array = (char **)malloc(nova_forma.largura * sizeof(char *));
-    int i, j;
-    for (i = 0; i < nova_forma.largura; i++) {
-        nova_forma.array[i] = (char *)malloc(nova_forma.largura * sizeof(char));
-        for (j = 0; j < nova_forma.largura; j++) {
-            nova_forma.array[i][j] = aux[i][j];
-        }
-    }
-    return nova_forma;
-}
-
-/*
- * Função responsável por realizar toda a movimentação da peça que cai
- * @param direcao - Esquerda, Baixo(descer mais rápido), Direita e Cima(rotação): 'a', 's', 'd' e 'w' respectivamente.
- * Aqui entra o acelerômetro.
- **/
-void MovimentarForma(int direcao) {
-    Forma temp = CopiarForma(forma_atual);
-    switch (direcao) {
-    case 'w':
-        RotacionarForma(temp); // rotate clockwise
-        if (ChecarPosicao(temp))
-            RotacionarForma(forma_atual);
-        break;
-    case 's':
-        temp.linha++; // move pra baixo
-        if (ChecarPosicao(temp))
-            forma_atual.linha++;
-        else {
-            SobrescreverMatriz();
-            RemoverLinhaEAtualizarPontuacao();
-            GerarNovaFormaAleatoriamente();
-        }
-        break;
-    case 'd':
-        temp.coluna++; // move pra direita
-        if (ChecarPosicao(temp))
-            forma_atual.coluna++;
-        break;
-    case 'a':
-        temp.coluna--; // move pra esquerda
-        if (ChecarPosicao(temp))
-            forma_atual.coluna--;
-        break;
-    }
-    ApagarForma(temp);
-}
-
-/*
- * Função responsável por realizar a remoção da linha completa e incrementação da pontuação do jogador
- **/
-void RemoverLinhaEAtualizarPontuacao() {
-    int i, j, soma, contagem = 0;
-    for (i = 0; i < LINHAS; i++) {
-        soma = 0;
-        for (j = 0; j < COLUNAS; j++)
-            if (Matriz[i][j] != 0)
-                soma++;
-        if (soma == COLUNAS) {
-            contagem++;
-            int l, k;
-            for (k = i; k >= 1; k--)
-                for (l = 0; l < COLUNAS; l++)
-                    Matriz[k][l] = Matriz[k - 1][l];
-            for (l = 0; l < COLUNAS; l++)
-                Matriz[k][l] = 0;
-            temporizador -= decrementar--;
-        }
-    }
-    pontuacao += 100 * contagem;
-    exibirPontuacao(pontuacao, 5, 36, pontuacao_Matriz);
-}
-
-/*
- * Função responsável por "repintar" a matriz do jogo, fazendo com que a peça atual se torne visível
- **/
-void SobrescreverMatriz() {
-    int i, j;
-    for (i = 0; i < forma_atual.largura; i++) {
-        for (j = 0; j < forma_atual.largura; j++) {
-            if (forma_atual.array[i][j])
-                Matriz[forma_atual.linha + i][forma_atual.coluna + j] = forma_atual.array[i][j];
-        }
-    }
-    //  ler_matriz(LINHAS,COLUNAS,Matriz,2,1,0,2);
-}
-
-/*
- * Função responsável por gerar uma nova peça de forma randomica
- **/
-void GerarNovaFormaAleatoriamente() {
-    Forma nova_forma = CopiarForma(VetorDeFormas[rand() % 7]);
-    nova_forma.coluna = rand() % (COLUNAS - nova_forma.largura + 1);
-    nova_forma.linha = 0;
-    // comentar as 2 linhas abaixo e a função mudar cor array em caso de problema no teste
-
-    /* Tem que de alguma forma, mandar as cores randomizadas, pois não está colorindo corretamente quando pontua*/
-    nova_forma.cor = VetorDeCores[rand() % 4];
-    mudarCorArray(nova_forma.largura, nova_forma.largura, nova_forma, nova_forma.cor);
-
-    ApagarForma(forma_atual);
-    forma_atual = nova_forma;
-    if (!ChecarPosicao(forma_atual)) {
-        stop = TRUE;
-    }
-}
-
-void mudarCorArray(int linhas, int colunas, Forma forma, int cor) {
-    int i, j;
-    for (i = 0; i < linhas; i++) {
-        for (j = 0; j < colunas; j++) {
-            if (forma.array[i][j] == 1) {
-                forma.array[i][j] = cor;
-            }
-        }
-    }
-}
-
-/*
- * Função responsável por verificar a posicao de uma forma
- * @param forma - Peça a ser apagada
- **/
-int ChecarPosicao(Forma forma) {
-    char **array = forma.array;
-    int i, j;
-    for (i = 0; i < forma.largura; i++) {
-        for (j = 0; j < forma.largura; j++) {
-            if ((forma.coluna + j < 0 || forma.coluna + j >= COLUNAS || forma.linha + i >= LINHAS)) {
-                if (array[i][j])
-                    return FALSE;
-            } else if (Matriz[forma.linha + i][forma.coluna + j] && array[i][j])
-                return FALSE;
-        }
-    }
-    return TRUE;
-}
-
-/*
- * Função responsável por apagar uma forma
- * @param forma - Peça a ser apagada
- **/
-void ApagarForma(Forma forma) {
-    int i;
-    for (i = 0; i < forma.largura; i++)
-        free(forma.array[i]);
-    free(forma.array);
-}
-
-/*
- * Função responsável por verificar se está na hora de atualizar a exibição
- **/
-int temQueAtualizar() {
-    return ((suseconds_t)(now.tv_sec * 1000000 + now.tv_usec) - ((suseconds_t)before_now.tv_sec * 1000000 + before_now.tv_usec)) > temporizador;
-}
-
-/*
- * Função responsável por rotacionar uma forma
- * @param forma - Peça a ser rotacionada
- **/
-void RotacionarForma(Forma forma) {
-    Forma temp = CopiarForma(forma);
-    int i, j, k, width;
-    width = forma.largura;
-    for (i = 0; i < width; i++) {
-        for (j = 0, k = width - 1; j < width; j++, k--) {
-            forma.array[i][j] = temp.array[k][i];
-        }
-    }
-    ApagarForma(temp);
-}
-
-void catchSIGINT(int signum) {
-    printf("Unmapping\n");
-    desmapear_gpu();
-    stop = 1;
-}
-
-void *button_threads(void *args) {
-    int btn = 0;
-    while (LISTEN_BTN) {
-        btn = botoes();
-        btn = (~btn) & 0b1111;
-        if (btn == 1) {
-            BUTTON = 1;
-            usleep(200000);
-        } else if (btn == 2) {
-            BUTTON = 2;
-            usleep(200000);
-        } else if (btn == 4) {
-            BUTTON = 3;
-            usleep(200000);
-        } else if (btn == 8) {
-            BUTTON = 4;
-            usleep(200000);
-        }
-    }
     return NULL;
 }

@@ -15,6 +15,7 @@
 .global reset_pulsecounter
 .global button
 .global set_sprite_pixel_color
+.global set_polygon
 
 .type mem_map, %function
 mem_map:
@@ -344,7 +345,7 @@ set_polygon:
     ldr r4, [sp, #0]
 
     sub sp, sp, #20
-    str r10 [sp, #16]
+    str r10, [sp, #16]
     
     ldr r10,=mem_mapped_file_descriptor
     ldr r10, [r10]
@@ -353,7 +354,6 @@ set_polygon:
     lsl r0, #4
     @opcode
     orr r0, #0b0011
-    str r10, [sp, #0]
 
     str r0, [r10, #0x80] @escreve em data_A
     

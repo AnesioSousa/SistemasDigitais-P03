@@ -760,3 +760,12 @@ void clear_poligonos()
         desenhar_poligono(i, 0, 0, 0, 0, 0, 0, 0);
     }
 }
+
+void clear_sprites()
+{
+    int i = 1;
+    for (i; i < 32; i++)
+    {
+        set_sprite(i, 0, 0, 0, 0);
+    }
+}
