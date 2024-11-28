@@ -134,7 +134,7 @@ void accelerometer_x_read(int16_t szData16[3], I2C_Registers regs) {
 	szData16[2] = (szData8[5] << 8) | szData8[4];
 }
 
-int accelereometer_isDataReady(I2C_Registers regs) {
+int accelerometer_is_data_ready(I2C_Registers regs) {
     int bReady = 0;
     uint8_t data8;
 

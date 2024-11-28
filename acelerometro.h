@@ -71,6 +71,6 @@ void accelerometer_reg_write(uint8_t address, uint8_t value, I2C_Registers *regs
 
 void accelerometer_x_read(int16_t szData[2], I2C_Registers regs);
 
-int accelerometer_isDataReady(I2C_Registers regs);
+int accelerometer_is_data_ready(I2C_Registers regs);
 
 #endif
