@@ -15,14 +15,15 @@ Biblioteca com funções gráficas para o Processador Gráfico CoLenda, que perm
 
 # Sobre o projeto
 
-PAC-MAN é um de arcade clássico que evoluiu significantivamente desde sua apresentação à comunidade em 1980 pela Namco. As diretivas do game são simples, porém super engajadoras. O jogador controla o PAC-MAN, navegando ele através de um labirinto maze while consuming pellets (PAC-DOTS) and avoiding colorful ghosts.
-Game Mechanics
+PAC-MAN é um de arcade clássico que evoluiu significativamente desde sua apresentação à comunidade em 1980 pela Namco. As diretivas do game são simples, porém super engajadoras. O jogador controla o PAC-MAN, navegando ele através de um labirinto e enquanto anda o PAC-MAN vai consumindo pellets e a pontuação vai aumentando conforme a quantidade consumida por ele. O jogador deve sempre lembrar de evitar contato com os fantasmas coloridos.
 
-    Objective: The primary goal is to eat all the pellets in the maze while avoiding being caught by the ghosts. Eating larger pellets known as power pellets allows PAC-MAN to temporarily turn the tables on the ghosts, making them vulnerable.
-    Levels and Mazes: The game consists of multiple levels, each with a unique maze layout. As players progress, the speed and behavior of the ghosts become more challenging.
+# A mecânica do game 
+Objetivo: O objetivo principal do jogo é consumir todas as pellets no labirinto enquando se evita ser pego pelos fantasmas. Comer as pellets maiores (chamadas de pellets do poder) faz com que o PAC-MAN temporariamente vire o jogo contra os fantastasmas, o tornando invulnerável e destruindo qualquer fastasma que o tocar.
 
-Modern Adaptations
+Nívels e labirintos: O jogo consistem de múltiplos léveis, cada um com um design único de labirinto. A medida que os jogadores vão melhorando, a velocidade e o comportamento dos fantasmas vão se tornando mais desafiadores.
 
+# Adaptações modernas
+Na nossa versão do game, temos somente um labirinto, o objetivo de consumir todas as pellets ainda se mantém e o pacman ainda deve evitar contato com fantasmas. As diferenças começam na jogabilidade já que no jogo original os fantasmas perseguem automaticamente o PAC-MAN, e na nossa versão há somente um fantasma e ele é controlado por um segundo jogador utilizando o mouse.
 
 Foi implementado uma biblioteca usando a liguagem assembly, desenvolvendo assim uma interface de conexão entre HPS e FPGA da DE1-SoC. Este projeto utiliza o trabalho de Gabriel Sá Barreto Alves, que desenvolveu um processador gráfico para desenhar polígonos convexos e gerenciar sprites. Diferentemente do projeto original, que usava o processador NIOS II, esta adaptação aproveita o processador HPS da DE1-SoC. A imagem é gerada em um monitor via VGA, acessando componentes do processador gráfico através do mapeamento de memória.
 
