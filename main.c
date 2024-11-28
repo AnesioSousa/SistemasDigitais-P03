@@ -12,15 +12,8 @@
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
-
 #define SIZE2 20
 #define SIZE1 15
-
-void invert_map(int size1, int size2, char map[size1][size2]);
-void mudarCorFundo(int linhas, int colunas, char matriz[linhas][colunas], int cor);
-void mudarCorGenerico(int linhas, int colunas, char matriz[linhas][colunas], int cor);
-void iniciarJogo(char map[SIZE1][SIZE2], char mapa2[SIZE1][SIZE2]);
-void encerrarJogo();
 
 typedef struct TPacman {
     int status;
@@ -41,62 +34,69 @@ typedef struct TPhantom {
     int animacao;
 } Phantom;
 
+void invert_map(int size1, int size2, char map[size1][size2]);
+void mudar_cor_fundo(int linhas, int colunas, char matriz[linhas][colunas], int cor);
+void mudar_cor_generico(int linhas, int colunas, char matriz[linhas][colunas], int cor);
+void iniciar_jogo(char map[SIZE1][SIZE2], char mapa2[SIZE1][SIZE2]);
+void encerrar_jogo();
+
 int pacman_vivo(Pacman *pac);
 Pacman *pacman_create(int x, int y);
 void desenhar_jogo(char mapa2[SIZE1][SIZE2]);
 int pacman_vivo(Pacman *pac);
 void pacman_destroy(Pacman *pac);
-void posicionarPacman(int x, int y, char mapa2[SIZE1][SIZE2]);
-void pontuaVerif(Pacman *pac, char mapa2[SIZE1][SIZE2]);
-void pacman_AlteraDirecao(Pacman *pac, int direcao, char mapa2[SIZE1][SIZE2]);
+void posicionar_pacman(int x, int y, char mapa2[SIZE1][SIZE2]);
+void pontua_verif(Pacman *pac, char mapa2[SIZE1][SIZE2]);
+void pacman_altera_posicao(Pacman *pac, int direcao, char mapa2[SIZE1][SIZE2]);
 void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]);
 
 Phantom *phantom_create(int x, int y);
 void phantom_destroy(Phantom *ph);
-void posicionarPhantom(int x, int y, char mapa2[SIZE1][SIZE2]);
+void posicionar_phantom(int x, int y, char mapa2[SIZE1][SIZE2]);
 void phantom_movimenta(Phantom *ph, char mapa2[SIZE1][SIZE2]);
 void phantom_desenha(Phantom *ph, char mapa2[SIZE1][SIZE2]);
-void trocarStatusPhantom(Phantom *ph);
-/*Button*/
-int LISTEN_BTN = 1,BUTTON = 0;
+void trocar_status_phantom(Phantom *ph);
 
-/*accel*/
 void inicializacao_accel();
 void *accel_working(void *args);
+void *mouse_working(void *args);
+
+/*Button*/
+int LISTEN_BTN = 1,BUTTON = 0;
+/*accel*/
 int ACCEL = 1, fd;
 I2C_Registers regs;
 static int16_t X[1];
 //---------------------------------
 Pacman *pac;
 Phantom *ph;
-int gameState = 0;
-int pacMaxPts;
+int state = 0;
+int max_point;
 /*mouse*/
 int action = 0;
 int power_amount = 1;
-void *mouse_working(void *args);
 
 int pause_game = 0;
-char pontuacao_Matriz[5][36];
+char pontuacao_matriz[5][36];
+
+char map[SIZE1][SIZE2] = {
+{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+{1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1},
+{1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1},
+{1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1},
+{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1},
+{1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1},
+{1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1},
+{1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1},
+{1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1},
+{1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1},
+{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+{1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1},
+{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
+char mapa2[SIZE1][SIZE2] = {{0}};
 char mapa3[SIZE1][SIZE2] = {{0}};
- 
-    char map[SIZE1][SIZE2] = {
-        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1},
-        {1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1},
-        {1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1},
-        {1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1},
-        {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1},
-        {1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1},
-        {1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1},
-        {1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
-        {1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
-    char mapa2[SIZE1][SIZE2] = {{0}};
 
 int main() {
     mapear_gpu();
@@ -114,23 +114,24 @@ int main() {
 	pthread_create(&thread_button, NULL, button_threads, NULL);
 	pthread_create(&thread_mouse, NULL, mouse_working, NULL);
     pthread_create(&thread_accel, NULL, accel_working, NULL);
-       int start, i, j;
-// clear_sprites();
+
+    int start, i, j;
+
     printf("iniciar jogo?\n");
     scanf("%d", &start);
 
-    iniciarJogo(map, mapa2);
+    iniciar_jogo(map, mapa2);
     pac = pacman_create(1, 1);
-    posicionarPacman(1, 1, mapa2);
+    posicionar_pacman(1, 1, mapa2);
 
     ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
 
     ph = phantom_create(13, 18);
-    posicionarPhantom(13, 18, mapa3);
+    posicionar_phantom(13, 18, mapa3);
 
     // teste de game_over
  	/*   
-        pacman_AlteraDirecao(pac, 1, mapa2);
+        pacman_altera_posicao(pac, 1, mapa2);
         phantom_AlteraDirecao(ph, 4, mapa3);
 
             for (i = 0; i < 20; i++)
@@ -145,7 +146,7 @@ int main() {
 
             printf("x = %d,xj = %d,y = %d, yj = %d, direcao = %d \n", pac->x, pac->xj, pac->y, pac->yj, pac->direcao);
         }
-	    pacman_AlteraDirecao(pac, 2, mapa2);
+	    pacman_altera_posicao(pac, 2, mapa2);
 
         phantom_AlteraDirecao(ph, 3, mapa3);
 
@@ -165,21 +166,21 @@ usleep(800000);
         if(pacman_vivo(pac)){}
         else{
             pac->vivo =0;
-            encerrarJogo();
+            encerrar_jogo();
             break;
             }
             printf("x = %d,xj = %d,y = %d, yj = %d, direcao = %d \n", pac->x, pac->xj, pac->y, pac->yj, pac->direcao);
         }
 */
-    while (gameState != 2) {
-                 if (BUTTON == 2)
-					                     pausar_game();
-				             if (BUTTON == 3)
-								                     encerrarJogo();
+    while (state != 2) {
+        if (BUTTON == 2)
+		    pausar_game();
+		if (BUTTON == 3)
+			encerrar_jogo();
 		desenhar_jogo(mapa2);
     }
     print_map(mapa2);
-    encerrarJogo();
+    encerrar_jogo();
 
 	pthread_join(thread_button, NULL);
     pthread_join(thread_accel, NULL);
@@ -192,10 +193,10 @@ usleep(800000);
 
 // FUNCOES JOGO
 
-void iniciarJogo(char map[SIZE1][SIZE2], char mapa2[SIZE1][SIZE2]) {
+void iniciar_jogo(char map[SIZE1][SIZE2], char mapa2[SIZE1][SIZE2]) {
     limpar_tela();
     /*matriz de mapa/fundo*/
-    mudarCorGenerico(SIZE1, SIZE2, map, 3);
+    mudar_cor_generico(SIZE1, SIZE2, map, 3);
     ler_matriz(SIZE1, SIZE2, map, 3, 0, 0, 3);
 
     /*matriz de controle/pontos*/
@@ -204,18 +205,18 @@ void iniciarJogo(char map[SIZE1][SIZE2], char mapa2[SIZE1][SIZE2]) {
 
     copiarMatriz(SIZE1, SIZE2, mapa3, mapa2);      /*criei essa matriz que é uma copia da matriz de controle para controlar o fantasma sem interferir na matriz de controle que será exibida*/
                                                    /*essa terceira matriz nao interfere na condição de vitoria do fantasma uma vez que ela se baseia nas cordenadas dentro da struct*/
-    pacMaxPts = contarMaxPts(SIZE1, SIZE2, mapa2); /*define a condição de vitoria de pac*/
+    max_point = contarMaxPts(SIZE1, SIZE2, mapa2); /*define a condição de vitoria de pac*/
 
-    mudarCorGenerico(SIZE1, SIZE2, mapa2, 2);
-    mudarCorFundo(SIZE1, SIZE2, mapa2, 9);
+    mudar_cor_generico(SIZE1, SIZE2, mapa2, 2);
+    mudar_cor_fundo(SIZE1, SIZE2, mapa2, 9);
     ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
 
-    gameState = 1;
+    state = 1;
 }
 
-void encerrarJogo() { /*por enquanto nao diferencia quem ganhou*/
+void encerrar_jogo() { /*por enquanto nao diferencia quem ganhou*/
 
-    gameState = 2;
+    state = 2;
     escrever_GameOver(1, 1, 1, 1, 1, 1, 1, 14, 25, 2); /*provisorio*/
 }
 
@@ -262,7 +263,7 @@ void desenhar_jogo(char mapa2[SIZE1][SIZE2]) { /*por enquanto sem implementaçã
 	int dj = pegar_direcaoPhantom();
     if (pacman_vivo(pac)) { /*a condição de morte de pacman esta implementada em phantom_movimenta*/
 
-        pacman_AlteraDirecao(pac, di, mapa2);
+        pacman_altera_posicao(pac, di, mapa2);
         pacman_movimenta(pac, mapa2);
         //pacman_desenha(pac, mapa2);
 
@@ -273,15 +274,15 @@ void desenhar_jogo(char mapa2[SIZE1][SIZE2]) { /*por enquanto sem implementaçã
         //phantom_desenha(ph, mapa3);
 
     } else { /*vitoria do fantasma nao implementada*/
-        encerrarJogo();
+        encerrar_jogo();
     }
 
-    if (pac->pontos == pacMaxPts) {
-        encerrarJogo();
+    if (pac->pontos == max_point) {
+        encerrar_jogo();
     }
 
     // ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
-    exibirPontuacao(pac->pontos, 5, 36, pontuacao_Matriz);
+    exibirPontuacao(pac->pontos, 5, 36, pontuacao_matriz);
 }
 
 int contarMaxPts(int size1, int size2, char map[size1][size2]) { /*funcao que contabiliza a quantidade de pontos necessária para que pacman ganhe*/
@@ -330,7 +331,7 @@ void pacman_destroy(Pacman *pac) {
     free(pac);
 }
 
-void posicionarPacman(int x, int y, char mapa2[SIZE1][SIZE2]) {
+void posicionar_pacman(int x, int y, char mapa2[SIZE1][SIZE2]) {
     pac->x = x;
     pac->y = y;
     mapa2[x][y] = 6; /*Numero que representa o pacman na matriz de controle(mapa2)*/
@@ -339,14 +340,14 @@ void posicionarPacman(int x, int y, char mapa2[SIZE1][SIZE2]) {
 
 }
 
-void pontuaVerif(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
+void pontua_verif(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
     if (mapa2[pac->xj][pac->yj] == 2) {
         mapa2[pac->xi][pac->yi] = 0; /*atualiza o valor da posicao anterior de pac caso ele pontue*/
         pac->pontos += 10;
     }
 }
 
-void pacman_AlteraDirecao(Pacman *pac, int direcao, char mapa2[SIZE1][SIZE2]) {
+void pacman_altera_posicao(Pacman *pac, int direcao, char mapa2[SIZE1][SIZE2]) {
     switch (pac->direcao) {
     case 0:
         pac->direcao = direcao;
@@ -385,8 +386,8 @@ void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
         pac->xj = pac->x;
         pac->yj = pac->y;
 
-        pontuaVerif(pac, mapa2);
-        posicionarPacman(((pac->x)), (pac->y), mapa2);
+        pontua_verif(pac, mapa2);
+        posicionar_pacman(((pac->x)), (pac->y), mapa2);
 
         break;
     case 3:
@@ -397,8 +398,8 @@ void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
             pac->xj = pac->x + 2;
             pac->yj = pac->y;
 
-            pontuaVerif(pac, mapa2);
-            posicionarPacman(((pac->x) + 1), (pac->y), mapa2);
+            pontua_verif(pac, mapa2);
+            posicionar_pacman(((pac->x) + 1), (pac->y), mapa2);
 			pacman_desenha(pac,mapa2);
 
         } else {
@@ -413,10 +414,10 @@ void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
             pac->xj = pac->x - 2;
             pac->yj = pac->y;
 
-            pontuaVerif(pac, mapa2);
+            pontua_verif(pac, mapa2);
             pacman_desenha(pac,mapa2);
 
-			posicionarPacman(((pac->x) - 1), (pac->y), mapa2);
+			posicionar_pacman(((pac->x) - 1), (pac->y), mapa2);
         } else {
             pac->direcao = 0;
         }
@@ -429,10 +430,10 @@ void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
             pac->xj = pac->x;
             pac->yj = pac->y - 2;
 
-            pontuaVerif(pac, mapa2);
+            pontua_verif(pac, mapa2);
 			pacman_desenha(pac,mapa2);
 
-            posicionarPacman(((pac->x)), (pac->y - 1), mapa2);
+            posicionar_pacman(((pac->x)), (pac->y - 1), mapa2);
         } else {
             pac->direcao = 0;
         }
@@ -446,8 +447,8 @@ void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
             pac->xj = pac->x;
             pac->yj = pac->y + 2;
 
-            pontuaVerif(pac, mapa2);
-            posicionarPacman(((pac->x)), (pac->y + 1), mapa2);
+            pontua_verif(pac, mapa2);
+            posicionar_pacman(((pac->x)), (pac->y + 1), mapa2);
 			pacman_desenha(pac,mapa2);
 
         } else {
@@ -573,7 +574,7 @@ void phantom_destroy(Phantom *ph) {
     free(ph);
 }
 
-void posicionarPhantom(int x, int y, char mapa2[SIZE1][SIZE2]) {
+void posicionar_phantom(int x, int y, char mapa2[SIZE1][SIZE2]) {
     ph->x = x;
     ph->y = y;
     mapa2[x][y] = 7; /*Numero que representa o phantom na matriz de controle(mapa2)*/
@@ -620,7 +621,7 @@ void phantom_movimenta(Phantom *ph, char mapa2[SIZE1][SIZE2]) {
         ph->xj = ph->x;
         ph->yj = ph->y;
 
-        posicionarPhantom(((ph->x)), (ph->y), mapa2);
+        posicionar_phantom(((ph->x)), (ph->y), mapa2);
 
         break;
     case 3:
@@ -631,7 +632,7 @@ void phantom_movimenta(Phantom *ph, char mapa2[SIZE1][SIZE2]) {
             ph->xj = ph->x + 2;
             ph->yj = ph->y;
 
-            posicionarPhantom(((ph->x) + 1), (ph->y), mapa2);
+            posicionar_phantom(((ph->x) + 1), (ph->y), mapa2);
 			phantom_desenha(ph,mapa2);
         } else {
             ph->direcao = 0;
@@ -645,7 +646,7 @@ void phantom_movimenta(Phantom *ph, char mapa2[SIZE1][SIZE2]) {
             ph->yj = ph->y;
 
 			phantom_desenha(ph,mapa2);
-            posicionarPhantom(((ph->x) - 1), (ph->y), mapa2);
+            posicionar_phantom(((ph->x) - 1), (ph->y), mapa2);
         } else {
             ph->direcao = 0;
         }
@@ -658,7 +659,7 @@ void phantom_movimenta(Phantom *ph, char mapa2[SIZE1][SIZE2]) {
             ph->yj = ph->y - 2;
 			
 			phantom_desenha(ph,mapa2);
-            posicionarPhantom(((ph->x)), (ph->y - 1), mapa2);
+            posicionar_phantom(((ph->x)), (ph->y - 1), mapa2);
         } else {
             ph->direcao = 0;
         }
@@ -671,7 +672,7 @@ void phantom_movimenta(Phantom *ph, char mapa2[SIZE1][SIZE2]) {
             ph->xj = ph->x;
             ph->yj = ph->y + 2;
 
-            posicionarPhantom(((ph->x)), (ph->y + 1), mapa2);
+            posicionar_phantom(((ph->x)), (ph->y + 1), mapa2);
 			phantom_desenha(ph,mapa2);
         } else {
             ph->direcao = 0;
@@ -704,7 +705,7 @@ void phantom_desenha(Phantom *ph, char mapa2[SIZE1][SIZE2]) { /*funcao responsav
                 //desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi + 1) * 3, 0, 0, 0, 1);
                 
 				desenhar_sprite(2, ((i + 1) + (ph->yi + 1) * 3) * 8, (((ph->x) * 3) + 1) * 8 - 7, 2, 1);
-				trocarStatusPhantom(ph);
+				trocar_status_phantom(ph);
             }
         }
     }
@@ -718,7 +719,7 @@ void phantom_desenha(Phantom *ph, char mapa2[SIZE1][SIZE2]) { /*funcao responsav
                 //desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi - 1) * 3, 0, 0, 0, 1);
                 
 				desenhar_sprite(2, ((i + 1) + (ph->yi - 1) * 3) * 8, (((ph->x) * 3) + 1) * 8 - 7, 2, 1);
-				trocarStatusPhantom(ph);
+				trocar_status_phantom(ph);
             }
         }
     }
@@ -732,7 +733,7 @@ void phantom_desenha(Phantom *ph, char mapa2[SIZE1][SIZE2]) { /*funcao responsav
                 //desenhar_quadrado((i + 1) + (ph->xi + 1) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
                 
 				desenhar_sprite(2, (((ph->y) * 3) + 1) * 8 - 7, ((i + 1) + (ph->xi + 1) * 3) * 8, 2, 1);
-				trocarStatusPhantom(ph);
+				trocar_status_phantom(ph);
             }
         }
     }
@@ -746,7 +747,7 @@ void phantom_desenha(Phantom *ph, char mapa2[SIZE1][SIZE2]) { /*funcao responsav
                 //desenhar_quadrado((i + 1) + (ph->xi - 1) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
                 
 				desenhar_sprite(2, (((ph->y) * 3) + 1) * 8 - 7, ((i + 1) + (ph->xi - 1) * 3) * 8, 2, 1);
-				trocarStatusPhantom(ph);
+				trocar_status_phantom(ph);
             }
         }
     }
@@ -755,7 +756,7 @@ void phantom_desenha(Phantom *ph, char mapa2[SIZE1][SIZE2]) { /*funcao responsav
     }
 }
 
-void trocarStatusPhantom(Phantom *ph) { /*status diz qual sprite sera utilizado*/
+void trocar_status_phantom(Phantom *ph) { /*status diz qual sprite sera utilizado*/
     ph->status = 1 - ph->status;
 }
 
@@ -768,7 +769,7 @@ void invert_map(int size1, int size2, char map[size1][size2]) {
         }
     }
 };
-void mudarCorFundo(int linhas, int colunas, char matriz[linhas][colunas], int cor) {
+void mudar_cor_fundo(int linhas, int colunas, char matriz[linhas][colunas], int cor) {
     int i, j;
     for (i = 0; i < linhas; i++) {
         for (j = 0; j < colunas; j++) {
@@ -779,7 +780,7 @@ void mudarCorFundo(int linhas, int colunas, char matriz[linhas][colunas], int co
     }
 }
 
-void mudarCorGenerico(int linhas, int colunas, char matriz[linhas][colunas], int cor) {
+void mudar_cor_generico(int linhas, int colunas, char matriz[linhas][colunas], int cor) {
     int i, j;
     for (i = 0; i < linhas; i++) {
         for (j = 0; j < colunas; j++) {
@@ -832,7 +833,7 @@ void pausar_game() {
 																            limpar_tela();
 																			            ler_matriz(SIZE1, SIZE2, map, 3, 0, 0, 3);
 																						            ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
-																									            exibirPontuacao(pac->pontos, 5, 36, pontuacao_Matriz);
+																									            exibirPontuacao(pac->pontos, 5, 36, pontuacao_matriz);
 																												            break;
 																															        }
 									    }
