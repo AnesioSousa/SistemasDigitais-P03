@@ -58,20 +58,21 @@ void mouse_movement(int *action, int *power_amount)
     pos_y -= (data[2]/2);
     if (pos_x < 0)
     {
-        pos_x = 0;
+          pos_x = 0;
     }
     if (pos_x > 640)
     {
-        pos_x = 640;
+
+		        pos_x = 640;
     }
 
     if (pos_y < 0)
     {
-        pos_y = 0;
+                pos_y = 0;
     }
     if (pos_y > 480)
     {
-        pos_y = 480;
+                pos_y = 480;
     }
 }
 

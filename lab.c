@@ -44,12 +44,15 @@ int main(){
 
 	clear_poligonos();
 	clear_sprites();
+    
+	setar_cor_pixel_sprite(1,1,1,1);
+	
 	Sprite sprt_1;
-	sprt_1.data_register  = 1;  sprt_1.coord_x = 300;  sprt_1.coord_y = 200;  sprt_1.offset = 0; sprt_1.active = 1; 
+	sprt_1.data_register = 1;  sprt_1.coord_x = 300;  sprt_1.coord_y = 200;  sprt_1.offset = 1; sprt_1.active = 1; 
 
 	//while(1){ 
 	//	if(time_is_up() == 0) {
-	//		set_sprite(sprt_1.data_register, sprt_1.coord_x, sprt_1.coord_y, sprt_1.offset, sprt_1.active); 
+			set_sprite(sprt_1.data_register, sprt_1.coord_x, sprt_1.coord_y, sprt_1.offset, sprt_1.active); 
 	//		break; 
 	//	}
 	//}
@@ -58,14 +61,14 @@ int main(){
 	//desenhar_sprite(1, 300, 200, 1, 1);
 	//desenhar_sprite(2, 300, 400, 2, 1);
 	//desenhar_poligono(endereco, forma, B, G,  R,  tamanho,  ponto_ref_y, ponto_ref_x);
-	int i = 1;	
-	while(1){
-		if(i==3)
-			i=1;
-		desenhar_poligono(1,1,7,0,0,6,i*100,200);
-		sleep(1);
-		i++;
-	}
+	//int i = 1;	
+	//while(1){
+	//	if(i==3)
+	//		i=1;
+	//	desenhar_poligono(1,1,7,0,0,6,i*100,200);
+	//	sleep(1);
+	//	i++;
+	//}
 	/*	
 		pthread_t thread_accel;
 		inicializacao_accel();
