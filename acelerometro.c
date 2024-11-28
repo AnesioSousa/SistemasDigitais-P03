@@ -89,24 +89,6 @@ void accelerometer_reg_write(uint8_t address, uint8_t value, I2C_Registers *regs
     *regs->i2c0_data_cmd = value;
 }
 
-void accelerometer_reg_multi_read(uint8_t address, uint8_t values[], uint8_t len, I2C_Registers *regs) {
-    *regs->i2c0_data_cmd = address + 0x400;
-
-    int i;
-    for (i = 0; i < len; i++) {
-        *(regs->i2c0_data_cmd) = 0x100;
-    }
-
-    int nth_byte = 0;
-    while (len) {
-        if (*(regs->ic_rxflr) > 0) {
-            values[nth_byte] = *(regs->i2c0_data_cmd);
-            nth_byte++;
-            len--;
-        }
-    }
-}
-
 void accelerometer_init(I2C_Registers regs) {
     accelerometer_reg_write(ADXL345_REG_DATA_FORMAT, XL345_RANGE_16G | XL345_FULL_RESOLUTION, &regs);
 
@@ -125,11 +107,31 @@ void accelerometer_init(I2C_Registers regs) {
     accelerometer_reg_write(ADXL345_REG_POWER_CTL, XL345_MEASURE, &regs);
 }
 
-void accelerometer_x_read(int16_t szData16[1], I2C_Registers regs) {
-    uint8_t szData8[2];
+
+void accelerometer_reg_multi_read(uint8_t address, uint8_t values[], uint8_t len, I2C_Registers *regs) {
+    *regs->i2c0_data_cmd = address + 0x400;
+
+    int i;
+    for (i = 0; i < len; i++) {
+        *(regs->i2c0_data_cmd) = 0x100;
+    }
+
+    int nth_byte = 0;
+    while (len) {
+        if (*(regs->ic_rxflr) > 0) {
+            values[nth_byte] = *(regs->i2c0_data_cmd);
+            nth_byte++;
+            len--;
+        }
+    }
+}
+void accelerometer_x_read(int16_t szData16[3], I2C_Registers regs) {
+    uint8_t szData8[6];
     accelerometer_reg_multi_read(0x32, (uint8_t *)&szData8, sizeof(szData8), &regs);
 
     szData16[0] = (szData8[1] << 8) | szData8[0];
+	szData16[1] = (szData8[3] << 8) | szData8[2];
+	szData16[2] = (szData8[5] << 8) | szData8[4];
 }
 
 int accelereometer_isDataReady(I2C_Registers regs) {

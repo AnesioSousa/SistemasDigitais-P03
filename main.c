@@ -1,4 +1,4 @@
-
+#include "mouse_move.c"
 #include "acelerometro.c"
 #include "gpu_lib.h"
 #include "pthread.h"
@@ -69,16 +69,26 @@ Pacman *pac;
 Phantom *ph;
 int gameState = 0;
 int pacMaxPts;
+/*mouse*/
+void *mouse_working(void *args);
+
+
 
 char pontuacao_Matriz[5][36];
 char mapa3[SIZE1][SIZE2] = {{0}};
 int main() {
     pthread_t thread_accel;
     inicializacao_accel();
+
+	if(!open_mouse_device()){
+		return 1;
+	}
+
+
     pthread_create(&thread_accel, NULL, accel_working, NULL);
     // clear_poligonos()
     //desenhar_poligono(1,1,1,1,1,1,1,1);
-
+	//clear_sprites();
     char map[SIZE1][SIZE2] = {
         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
         {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -110,10 +120,10 @@ int main() {
     ph = phantom_create(13, 18);
     posicionarPhantom(13, 18, mapa3);
 
-    /* teste de game_over
- 	   
+    // teste de game_over
+ 	/*   
         pacman_AlteraDirecao(pac, 1, mapa2);
-        phantom_AlteraDirecao(ph, 1, mapa3);
+        phantom_AlteraDirecao(ph, 4, mapa3);
 
             for (i = 0; i < 20; i++)
         {
@@ -121,23 +131,28 @@ int main() {
             pacman_desenha(pac, mapa2);
             ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
 
-            phantom_movimenta(ph, mapa3);
-            phantom_desenha(ph, mapa3);
+            //phantom_movimenta(ph, mapa3);
+            //phantom_desenha(ph, mapa3);
 
 
             printf("x = %d,xj = %d,y = %d, yj = %d, direcao = %d \n", pac->x, pac->xj, pac->y, pac->yj, pac->direcao);
         }
+	    pacman_AlteraDirecao(pac, 2, mapa2);
 
-        phantom_AlteraDirecao(ph, 4, mapa3);
+        phantom_AlteraDirecao(ph, 3, mapa3);
 
          for (i = 0; i < 20; i++)
-        {
+		 {
             pacman_movimenta(pac, mapa2);
-            pacman_desenha(pac, mapa2);
-            ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+            //pacman_desenha(pac, mapa2);
+            
+			ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+			
+usleep(800000);
+			phantom_desenha(ph, mapa3);
 
-            phantom_movimenta(ph, mapa3);
-            phantom_desenha(ph, mapa3);
+            //phantom_movimenta(ph, mapa3);
+			//phantom_desenha(ph, mapa3);
 
         if(pacman_vivo(pac)){}
         else{
@@ -146,18 +161,20 @@ int main() {
             break;
             }
             printf("x = %d,xj = %d,y = %d, yj = %d, direcao = %d \n", pac->x, pac->xj, pac->y, pac->yj, pac->direcao);
-        }*/
+        }
+*/
     while (gameState != 2) {
         desenhar_jogo(mapa2);
     }
-
     print_map(mapa2);
     encerrarJogo();
 
     pthread_join(thread_accel, NULL);
+	close_mouse_device();
     desmapear_gpu();
     return 0;
 }
+
 
 // FUNCOES JOGO
 
@@ -196,26 +213,48 @@ int pegar_direcaoPac() { /*no momento retorna somente o X*/
         di = 1;
     } else if (X[0] < -20) {
         di = 2;
-    } else
+    }else if (X[1] > 20){
+		di = 4;
+	}else if (X[1] < -20){
+		di = 3;
+	}
+   	else
         di = 0;
-    printf("%d \n", X[2]);
+    printf("%d \n", X[1]);
     return di;
 }
 
+int pegar_direcaoPhantom() { /*no momento retorna somente o X*/
+    int di;
+    if (pos_x > 20) {
+        di = 1;
+    } else if (pos_x < -20) {
+        di = 2;
+    }else if (pos_y > 20){
+		di = 4;
+	}else if (pos_y < -20){
+		di = 3;
+	}
+   	else
+        di = 0;
+    printf("%d \n", X[1]);
+    return di;
+}
 void desenhar_jogo(char mapa2[SIZE1][SIZE2]) { /*por enquanto sem implementação de sprites*/
     int di = pegar_direcaoPac();
+	int dj = pegar_direcaoPhantom();
     if (pacman_vivo(pac)) { /*a condição de morte de pacman esta implementada em phantom_movimenta*/
 
         pacman_AlteraDirecao(pac, di, mapa2);
         pacman_movimenta(pac, mapa2);
-        pacman_desenha(pac, mapa2);
+        //pacman_desenha(pac, mapa2);
 
         ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
-/*
-        phantom_AlteraDirecao(ph, di, mapa3);
+
+        phantom_AlteraDirecao(ph, dj, mapa3);
         phantom_movimenta(ph, mapa3);
         phantom_desenha(ph, mapa3);
-*/
+
     } else { /*vitoria do fantasma nao implementada*/
         encerrarJogo();
     }
@@ -344,6 +383,8 @@ void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
 
             pontuaVerif(pac, mapa2);
             posicionarPacman(((pac->x) + 1), (pac->y), mapa2);
+			pacman_desenha(pac,mapa2);
+
         } else {
             pac->direcao = 0;
         }
@@ -357,7 +398,9 @@ void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
             pac->yj = pac->y;
 
             pontuaVerif(pac, mapa2);
-            posicionarPacman(((pac->x) - 1), (pac->y), mapa2);
+            pacman_desenha(pac,mapa2);
+
+			posicionarPacman(((pac->x) - 1), (pac->y), mapa2);
         } else {
             pac->direcao = 0;
         }
@@ -371,6 +414,8 @@ void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
             pac->yj = pac->y - 2;
 
             pontuaVerif(pac, mapa2);
+			pacman_desenha(pac,mapa2);
+
             posicionarPacman(((pac->x)), (pac->y - 1), mapa2);
         } else {
             pac->direcao = 0;
@@ -387,6 +432,8 @@ void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
 
             pontuaVerif(pac, mapa2);
             posicionarPacman(((pac->x)), (pac->y + 1), mapa2);
+			pacman_desenha(pac,mapa2);
+
         } else {
             pac->direcao = 0;
         }
@@ -430,7 +477,7 @@ void pacman_desenha(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*funcao responsave
                 //desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi + 1) * 3, 7, 0, 7, 1);
                 usleep(80000);
                // desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi + 1) * 3, 0, 0, 0, 1);
-		desenhar_sprite(1, ((i + 1) + (pac->yi + 1) * 3)*8,(((pac->x) * 3) + 1)*8-7,1,1);	
+      		    desenhar_sprite(1, ((i + 1) + (pac->yi + 1) * 3)*8,(((pac->x) * 3) + 1)*8-7,1,1);	
                 trocarStatus(pac);
             }
         }
@@ -439,12 +486,12 @@ void pacman_desenha(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*funcao responsave
     if (pac->direcao == 2 && pac->yj > 0 && pac->yj < 18 && pac->y != pac->yj && mapa2[pac->x][pac->yj] < 9) { /*move para tras*/
         for (i = (pac->passo) - 1; i > 0; i--) {
             {
-                desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi) * 3, 0, 0, 0, 1);
-                desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi - 1) * 3, 7, 0, 7, 1);
+                //desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi) * 3, 0, 0, 0, 1);
+                //desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi - 1) * 3, 7, 0, 7, 1);
                 usleep(80000);
-                desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi - 1) * 3, 0, 0, 0, 1);
+                //desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi - 1) * 3, 0, 0, 0, 1);
                 
-		desenhar_sprite(1, ((i + 1) + (pac->yi - 1) * 3)*8,(((pac->x) * 3) + 1)*8-7,1,1);	
+		        desenhar_sprite(1, ((i + 1) + (pac->yi - 1) * 3)*8,(((pac->x) * 3) + 1)*8-7,1,1);	
 
 		trocarStatus(pac);
             }
@@ -454,23 +501,27 @@ void pacman_desenha(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*funcao responsave
     if (pac->direcao == 3 && pac->xj < 13 && pac->xj > 0 && pac->x != pac->xj && mapa2[pac->xj][pac->y] < 9) { /*move para baixo*/
         for (i = 0; i < (pac->passo) - 1; i++) {
             {
-                desenhar_quadrado((i + 1) + (pac->xi) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
-                desenhar_quadrado((i + 1) + (pac->xi + 1) * 3, ((pac->y) * 3) + 1, 7, 0, 7, 1);
+                //desenhar_quadrado((i + 1) + (pac->xi) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
+                //desenhar_quadrado((i + 1) + (pac->xi + 1) * 3, ((pac->y) * 3) + 1, 7, 0, 7, 1);
                 usleep(80000);
-                desenhar_quadrado((i + 1) + (pac->xi + 1) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
-                trocarStatus(pac);
+                //desenhar_quadrado((i + 1) + (pac->xi + 1) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
+                
+      			desenhar_sprite(1, (((pac->y) * 3) + 1) * 8 - 7, ((i + 1) + (pac->xi + 1) * 3) * 8, 1, 1);
+				trocarStatus(pac);
             }
         }
     }
 
-    if (pac->direcao == 4 && pac->xj > 0 && pac->xj < 13 && pac->x != pac->xj && mapa2[pac->xj - 1][pac->y] < 9) { /*move para cima*/
+    if (pac->direcao == 4 && pac->xj > 0 && pac->xj < 13 && pac->x != pac->xj && mapa2[pac->xj][pac->y] < 9) { /*move para cima*/
         for (i = (pac->passo) - 1; i > 0; i--) {
             {
-                desenhar_quadrado((i + 1) + (pac->xi) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
-                desenhar_quadrado((i + 1) + (pac->xi - 1) * 3, ((pac->y) * 3) + 1, 7, 0, 7, 1);
+                //desenhar_quadrado((i + 1) + (pac->xi) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
+                //desenhar_quadrado((i + 1) + (pac->xi - 1) * 3, ((pac->y) * 3) + 1, 7, 0, 7, 1);
                 usleep(80000);
-                desenhar_quadrado((i + 1) + (pac->xi - 1) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
-                trocarStatus(pac);
+                //desenhar_quadrado((i + 1) + (pac->xi - 1) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
+                
+				desenhar_sprite(1, (((pac->y) * 3) + 1) * 8 - 7, ((i + 1) + (pac->xi - 1) * 3) * 8, 1, 1);
+				trocarStatus(pac);
             }
         }
     }
@@ -510,6 +561,7 @@ void posicionarPhantom(int x, int y, char mapa2[SIZE1][SIZE2]) {
     ph->x = x;
     ph->y = y;
     mapa2[x][y] = 7; /*Numero que representa o phantom na matriz de controle(mapa2)*/
+	desenhar_sprite(2, 1 + ((ph->y) * 3) * 8, ((ph->x) * 3) * 8, 2, 1);
 }
 
 void phantom_AlteraDirecao(Phantom *ph, int direcao, char mapa2[SIZE1][SIZE2]) {
@@ -623,14 +675,16 @@ void phantom_desenha(Phantom *ph, char mapa2[SIZE1][SIZE2]) { /*funcao responsav
         return;
     }
 
-    if (ph->direcao == 1 && ph->yj < 18 && ph->yj > 0 && ph->y != ph->yj && mapa2[ph->x][ph->yj] < 9) { /*move para frente*/
+    if (ph->direcao == 1 && ph->yj < 17 && ph->yj > 0 && ph->y != ph->yj && mapa2[ph->x][ph->yj] < 9) { /*move para frente*/
         for (i = 0; i < (ph->passo) - 1; i++) {
             {
-                desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi) * 3, 0, 0, 0, 1);
-                desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi + 1) * 3, 7, 7, 7, 1);
+                //desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi) * 3, 0, 0, 0, 1);
+                //desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi + 1) * 3, 7, 7, 7, 1);
                 usleep(80000);
-                desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi + 1) * 3, 0, 0, 0, 1);
-                trocarStatusPhantom(ph);
+                //desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi + 1) * 3, 0, 0, 0, 1);
+                
+				desenhar_sprite(2, ((i + 1) + (ph->yi + 1) * 3) * 8, (((ph->x) * 3) + 1) * 8 - 7, 2, 1);
+				trocarStatusPhantom(ph);
             }
         }
     }
@@ -638,11 +692,13 @@ void phantom_desenha(Phantom *ph, char mapa2[SIZE1][SIZE2]) { /*funcao responsav
     if (ph->direcao == 2 && ph->yj > 0 && ph->yj < 18 && ph->y != ph->yj && mapa2[ph->x][ph->yj] < 9) { /*move para tras*/
         for (i = (ph->passo) - 1; i > 0; i--) {
             {
-                desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi) * 3, 0, 0, 0, 1);
-                desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi - 1) * 3, 7, 7, 7, 1);
+                //desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi) * 3, 0, 0, 0, 1);
+                //desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi - 1) * 3, 7, 7, 7, 1);
                 usleep(80000);
-                desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi - 1) * 3, 0, 0, 0, 1);
-                trocarStatusPhantom(ph);
+                //desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi - 1) * 3, 0, 0, 0, 1);
+                
+				desenhar_sprite(2, ((i + 1) + (ph->yi - 1) * 3) * 8, (((ph->x) * 3) + 1) * 8 - 7, 2, 1);
+				trocarStatusPhantom(ph);
             }
         }
     }
@@ -650,23 +706,27 @@ void phantom_desenha(Phantom *ph, char mapa2[SIZE1][SIZE2]) { /*funcao responsav
     if (ph->direcao == 3 && ph->xj < 13 && ph->xj > 0 && ph->x != ph->xj && mapa2[ph->xj][ph->y] < 9) { /*move para baixo*/
         for (i = 0; i < (ph->passo) - 1; i++) {
             {
-                desenhar_quadrado((i + 1) + (ph->xi) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
-                desenhar_quadrado((i + 1) + (ph->xi + 1) * 3, ((ph->y) * 3) + 1, 7, 7, 7, 1);
+                //desenhar_quadrado((i + 1) + (ph->xi) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
+                //desenhar_quadrado((i + 1) + (ph->xi + 1) * 3, ((ph->y) * 3) + 1, 7, 7, 7, 1);
                 usleep(80000);
-                desenhar_quadrado((i + 1) + (ph->xi + 1) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
-                trocarStatusPhantom(ph);
+                //desenhar_quadrado((i + 1) + (ph->xi + 1) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
+                
+				desenhar_sprite(2, (((ph->y) * 3) + 1) * 8 - 7, ((i + 1) + (ph->xi + 1) * 3) * 8, 2, 1);
+				trocarStatusPhantom(ph);
             }
         }
     }
 
-    if (ph->direcao == 4 && ph->xj > 0 && ph->xj < 13 && ph->x != ph->xj && mapa2[ph->xj - 1][ph->y] < 9) { /*move para cima*/
+    if (ph->direcao == 4 && ph->xj > 0 && ph->xj < 13 && ph->x != ph->xj && mapa2[ph->xj][ph->y] < 9) { /*move para cima*/
         for (i = (ph->passo) - 1; i > 0; i--) {
             {
-                desenhar_quadrado((i + 1) + (ph->xi) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
-                desenhar_quadrado((i + 1) + (ph->xi - 1) * 3, ((ph->y) * 3) + 1, 7, 7, 7, 1);
+                //desenhar_quadrado((i + 1) + (ph->xi) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
+                //desenhar_quadrado((i + 1) + (ph->xi - 1) * 3, ((ph->y) * 3) + 1, 7, 7, 7, 1);
                 usleep(80000);
-                desenhar_quadrado((i + 1) + (ph->xi - 1) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
-                trocarStatusPhantom(ph);
+                //desenhar_quadrado((i + 1) + (ph->xi - 1) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
+                
+				desenhar_sprite(2, (((ph->y) * 3) + 1) * 8 - 7, ((i + 1) + (ph->xi - 1) * 3) * 8, 2, 1);
+				trocarStatusPhantom(ph);
             }
         }
     }
