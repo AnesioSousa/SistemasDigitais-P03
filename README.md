@@ -1,10 +1,8 @@
-![Tela Inicial do Tetris](./Imagem%20do%20inicio.jpeg)
-
-
+<div align="center"><img src="https://c4.wallpaperflare.com/wallpaper/459/983/696/pac-man-peach-retro-games-hd-wallpaper-preview.jpg"></div>
 
 <br>
 
-# 🟦🟩🟥🟨 GPU-lib 🟩🟨🟥🟦
+# 🟦🟩🟥🟨 PacMan 🟩🟨🟥🟦
 
 Biblioteca com funções gráficas para o Processador Gráfico CoLenda, que permitem facilitar a implementação de jogos digitais para a plataforma DE1-SOC.
 
@@ -15,7 +13,16 @@ Biblioteca com funções gráficas para o Processador Gráfico CoLenda, que perm
 
 [Caike Dylon](https://github.com/Ckdylon)
 
-# Descrição do problema
+# Sobre o projeto
+
+PAC-MAN é um de arcade clássico que evoluiu significantivamente desde sua apresentação à comunidade em 1980 pela Namco. As diretivas do game são simples, porém super engajadoras. O jogador controla o PAC-MAN, navegando ele através de um labirinto maze while consuming pellets (PAC-DOTS) and avoiding colorful ghosts.
+Game Mechanics
+
+    Objective: The primary goal is to eat all the pellets in the maze while avoiding being caught by the ghosts. Eating larger pellets known as power pellets allows PAC-MAN to temporarily turn the tables on the ghosts, making them vulnerable.
+    Levels and Mazes: The game consists of multiple levels, each with a unique maze layout. As players progress, the speed and behavior of the ghosts become more challenging.
+
+Modern Adaptations
+
 
 Foi implementado uma biblioteca usando a liguagem assembly, desenvolvendo assim uma interface de conexão entre HPS e FPGA da DE1-SoC. Este projeto utiliza o trabalho de Gabriel Sá Barreto Alves, que desenvolveu um processador gráfico para desenhar polígonos convexos e gerenciar sprites. Diferentemente do projeto original, que usava o processador NIOS II, esta adaptação aproveita o processador HPS da DE1-SoC. A imagem é gerada em um monitor via VGA, acessando componentes do processador gráfico através do mapeamento de memória.
 
