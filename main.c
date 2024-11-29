@@ -206,9 +206,6 @@ usleep(800000);
 
 // FUNCOES JOGO
 
-void iniciar_jogo(char map[SIZE1][SIZE2], char mapa2[SIZE1][SIZE2]) {
-}
-
 void encerrar_jogo() { /*por enquanto nao diferencia quem ganhou*/
 
     state = 2;
@@ -216,50 +213,50 @@ void encerrar_jogo() { /*por enquanto nao diferencia quem ganhou*/
 }
 
 /*esse tipo de funcao pode ser replicado para o mouse*/
-int pegar_direcaoPac() { /*no momento retorna somente o X*/
-    int di;
+int pegar_direcao_pac() { /*no momento retorna somente o X*/
+    int direcao;
     if (X[0] > 20) {
-        di = 1;
+        direcao = 1;
     } else if (X[0] < -20) {
-        di = 2;
+        direcao = 2;
     } else if (X[1] > 20) {
-        di = 4;
+        direcao = 4;
     } else if (X[1] < -20) {
-        di = 3;
+        direcao = 3;
     } else
-        di = 0;
+        direcao = 0;
     printf("%d \n", X[1]);
-    return di;
+    return direcao;
 }
 
-int pegar_direcaoPhantom() { /*no momento retorna somente o X*/
-    int di;
+int pegar_direcao_phant() { /*no momento retorna somente o X*/
+    int direcao;
     if (pos_x == 20) {
-        di = 1;
+        direcao = 1;
     } else if (pos_x == -20) {
-        di = 2;
+        direcao = 2;
     } else if (pos_y == 20) {
-        di = 4;
+        direcao = 4;
     } else if (pos_y == -20) {
-        di = 3;
+        direcao = 3;
     } else
-        di = 0;
+        direcao = 0;
     printf("pos_x = %d, posy = %d \n, direcao = %d", pos_x, pos_y, ph->direcao);
-    return di;
+    return direcao;
 }
 
 void desenhar_jogo(char mapa2[SIZE1][SIZE2]) { /*por enquanto sem implementação de sprites*/
-    int di = pegar_direcaoPac();
-    int dj = pegar_direcaoPhantom();
-    if (pacman_vivo(pac)) { /*a condição de morte de pacman esta implementada em phantom_movimenta*/
+    int direcao1 = pegar_direcao_pac();
+    int direcao2 = pegar_direcao_phant();
 
-        pacman_altera_posicao(pac, di, mapa2);
+    if (pacman_vivo(pac)) { /*a condição de morte de pacman esta implementada em phantom_movimenta*/
+        pacman_altera_posicao(pac, direcao1, mapa2);
         pacman_movimenta(pac, mapa2);
         // pacman_desenha(pac, mapa2);
 
         ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
 
-        phantom_altera_direcao(ph, dj, mapa3);
+        phantom_altera_direcao(ph, direcao2, mapa3);
         phantom_movimenta(ph, mapa3);
         // phantom_desenha(ph, mapa3);
 
@@ -448,7 +445,7 @@ void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
     mapa2[(pac->xi)][pac->yi] = 0;
 }
 
-int temParede(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*nao esta sendo utilizada*/
+int tem_parede(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*nao esta sendo utilizada*/
     if (mapa2[pac->x + 1][pac->y] < 9 && pac->direcao == 3) {
         return 0;
     } else if (mapa2[pac->x][pac->y + 1] < 9 && pac->direcao == 1) {
@@ -466,7 +463,7 @@ void pacman_desenha(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*funcao responsave
     /*por enquanto nao utiliza sprites*/
     int i;
     /*
-     if (temParede(pac, mapa2))
+     if (tem_parede(pac, mapa2))
      {
          printf("achou parede e nao desenhou");
          return;
@@ -484,7 +481,7 @@ void pacman_desenha(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*funcao responsave
                 usleep(80000);
                 // desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi + 1) * 3, 0, 0, 0, 1);
                 desenhar_sprite(1, ((i + 1) + (pac->yi + 1) * 3) * 8, (((pac->x) * 3) + 1) * 8 - 7, 1, 1);
-                trocarStatus(pac);
+                trocar_status(pac);
             }
         }
     }
@@ -499,7 +496,7 @@ void pacman_desenha(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*funcao responsave
 
                 desenhar_sprite(1, ((i + 1) + (pac->yi - 1) * 3) * 8, (((pac->x) * 3) + 1) * 8 - 7, 1, 1);
 
-                trocarStatus(pac);
+                trocar_status(pac);
             }
         }
     }
@@ -513,7 +510,7 @@ void pacman_desenha(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*funcao responsave
                 // desenhar_quadrado((i + 1) + (pac->xi + 1) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
 
                 desenhar_sprite(1, (((pac->y) * 3) + 1) * 8 - 7, ((i + 1) + (pac->xi + 1) * 3) * 8, 1, 1);
-                trocarStatus(pac);
+                trocar_status(pac);
             }
         }
     }
@@ -527,13 +524,13 @@ void pacman_desenha(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*funcao responsave
                 // desenhar_quadrado((i + 1) + (pac->xi - 1) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
 
                 desenhar_sprite(1, (((pac->y) * 3) + 1) * 8 - 7, ((i + 1) + (pac->xi - 1) * 3) * 8, 1, 1);
-                trocarStatus(pac);
+                trocar_status(pac);
             }
         }
     }
 }
 
-void trocarStatus(Pacman *pac) { /*status diz qual sprite sera utilizado*/
+void trocar_status(Pacman *pac) { /*status diz qual sprite sera utilizado*/
     pac->status = 1 - pac->status;
 }
 
