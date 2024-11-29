@@ -146,7 +146,7 @@ void escrever_Borda(int linhas, int colunas, char matriz[linhas][colunas], int c
 		}
 	}
 }
-void exibirPontuacao(int pontuacao, int linhas, int colunas, char matriz[linhas][colunas]) {
+void exibir_pontuacao(int pontuacao, int linhas, int colunas, char matriz[linhas][colunas]) {
 
 	int i, j;
 	int c = 0;
@@ -205,22 +205,22 @@ void exibirPontuacao(int pontuacao, int linhas, int colunas, char matriz[linhas]
 			}
 			switch (i + 1) { /*atribuição da variável temporária a submatriz que corresponde a sua posição no vetor*/
 				case 1:
-					copiarMatriz(5, 5, digito1, temp);
+					copiar_matriz(5, 5, digito1, temp);
 					break;
 				case 2:
-					copiarMatriz(5, 5, digito2, temp);
+					copiar_matriz(5, 5, digito2, temp);
 					break;
 				case 3:
-					copiarMatriz(5, 5, digito3, temp);
+					copiar_matriz(5, 5, digito3, temp);
 					break;
 				case 4:
-					copiarMatriz(5, 5, digito4, temp);
+					copiar_matriz(5, 5, digito4, temp);
 					break;
 				case 5:
-					copiarMatriz(5, 5, digito5, temp);
+					copiar_matriz(5, 5, digito5, temp);
 					break;
 				case 6:
-					copiarMatriz(5, 5, digito6, temp);
+					copiar_matriz(5, 5, digito6, temp);
 					break;
 			}
 		}
@@ -241,22 +241,22 @@ void exibirPontuacao(int pontuacao, int linhas, int colunas, char matriz[linhas]
 			definirNumero0(temp);
 			switch (i + 1) {
 				case 1:
-					copiarMatriz(5, 5, digito1, temp);
+					copiar_matriz(5, 5, digito1, temp);
 					break;
 				case 2:
-					copiarMatriz(5, 5, digito2, temp);
+					copiar_matriz(5, 5, digito2, temp);
 					break;
 				case 3:
-					copiarMatriz(5, 5, digito3, temp);
+					copiar_matriz(5, 5, digito3, temp);
 					break;
 				case 4:
-					copiarMatriz(5, 5, digito4, temp);
+					copiar_matriz(5, 5, digito4, temp);
 					break;
 				case 5:
-					copiarMatriz(5, 5, digito5, temp);
+					copiar_matriz(5, 5, digito5, temp);
 					break;
 				case 6:
-					copiarMatriz(5, 5, digito6, temp);
+					copiar_matriz(5, 5, digito6, temp);
 					break;
 			}
 		}
@@ -274,7 +274,7 @@ void exibirPontuacao(int pontuacao, int linhas, int colunas, char matriz[linhas]
 	}
 }
 
-void copiarMatriz(int linhas, int colunas, char matriz[linhas][colunas], char temp[linhas][colunas]) {
+void copiar_matriz(int linhas, int colunas, char matriz[linhas][colunas], char temp[linhas][colunas]) {
 	int i, j;
 	for (i = 0; i < linhas; i++) {
 		for (j = 0; j < colunas; j++) {

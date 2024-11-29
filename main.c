@@ -61,7 +61,7 @@ void inicializacao_accel();
 void *accel_working(void *args);
 void *mouse_working(void *args);
 
-void *button_threads(void *args);
+void *buttons_thread(void *args);
 
 /*Button*/
 int LISTEN_BTN = 1, BUTTON = 0;
@@ -770,7 +770,7 @@ void mudar_cor_generico(int linhas, int colunas, char matriz[linhas][colunas], i
     int i, j;
     for (i = 0; i < linhas; i++) 
         for (j = 0; j < colunas; j++) 
-            if (matriz[i][j]) 
+            if (matriz[i][j] == 1) 
                 matriz[i][j] = cor;
 }
 
@@ -829,12 +829,12 @@ void resetar_game(){
     ao reiniciar o jogo e necessario que as matrizes 2 e 3 voltem ao seu estado inicial
     por isso elas sao zeradas,invertidas e copiadas novamente.
     */
-    mapa2 = {{0}};
-    mapa3 = {{0}};
+    //mapa2 = {{0}};
+    //mapa3 = {{0}};
 
-    copiarMatriz(SIZE1, SIZE2, mapa2, map);
+    copiar_matriz(SIZE1, SIZE2, mapa2, map);
     invert_map(SIZE1, SIZE2, mapa2);
-    copiarMatriz(SIZE1, SIZE2, mapa3, mapa2);
+    copiar_matriz(SIZE1, SIZE2, mapa3, mapa2);
 
     MAX_POINTS = count_max_points(SIZE1, SIZE2, mapa2); /*define a condição de vitoria de pac*/
     MAX_POINTS -= 10;
