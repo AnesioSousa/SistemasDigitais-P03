@@ -58,8 +58,8 @@ void phantom_desenha(Phantom *ph, char mapa2[SIZE1][SIZE2]);
 void trocar_status_phantom(Phantom *ph);
 
 void inicializacao_accel();
-void *accel_working(void *args);
-void *mouse_working(void *args);
+void *player_1(void *args);
+void *player_2(void *args);
 
 void *buttons_thread(void *args);
 
@@ -101,9 +101,10 @@ char mapa2[SIZE1][SIZE2] = {{0}};
 char mapa3[SIZE1][SIZE2] = {{0}};
 
 int main() {
-    pthread_t thread_accel, thread_mouse, thread_button;
-
     mapear_gpu();
+    pthread_t thread_player_1, thread_player_2, thread_button;
+
+    inicializacao_accel();
     if (!open_mouse_device()) {
         return 1;
     }
@@ -111,12 +112,10 @@ int main() {
     clear_poligonos();
     clear_sprites();
     setar_cor_pixel_sprite(1, 1, 1, 1);
-
-    inicializacao_accel();
-
+  
     pthread_create(&thread_button, NULL, buttons_thread, NULL);
-    pthread_create(&thread_mouse, NULL, mouse_working, NULL);
-    pthread_create(&thread_accel, NULL, accel_working, NULL);
+    pthread_create(&thread_player_1, NULL, player_1, NULL);
+    pthread_create(&thread_player_2, NULL, player_2, NULL);
 
     limpar_tela();
     /*matriz de mapa/fundo*/
@@ -133,7 +132,6 @@ int main() {
     MAX_POINTS -= 10;                                   /*a primeira posicao que pacman ocupa ao iniciar o jogo nao é contabilizada
                                                           logo é necessário considerar essa diferenca ao tratar de sua condição de vitória
                                                         */
-
     mudar_cor_generico(SIZE1, SIZE2, mapa2, 2);
     mudar_cor_fundo(SIZE1, SIZE2, mapa2, 9);
     ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
@@ -147,7 +145,6 @@ int main() {
 
     ph = phantom_create(13, 18);
     posicionar_phantom(13, 18, mapa3);
-
     // teste de game_over
     /*
         pacman_altera_posicao(pac, 1, mapa2);
@@ -199,14 +196,14 @@ usleep(800000);
         if (BUTTON == 4)
             resetar_game();
         
-        desenhar_jogo(mapa2);
+        //desenhar_jogo(mapa2);
     }
     print_map(mapa2);
     encerrar_jogo();
 
     pthread_join(thread_button, NULL);
-    pthread_join(thread_accel, NULL);
-    pthread_join(thread_mouse, NULL);
+    pthread_join(thread_player_1, NULL);
+    pthread_join(thread_player_2, NULL);
     close_mouse_device();
     desmapear_gpu();
     return 0;
@@ -790,17 +787,30 @@ void inicializacao_accel() {
     accelerometer_init(regs); // Configura o acelerômetro
 }
 
-void *accel_working(void *args) {
-    while (ACCEL)
-        if (accelerometer_is_data_ready(regs))
-            accelerometer_x_read(X, regs); // lê os dados do eixo x
-    return NULL;
+void *player_1(void *args) {
+  while (ACCEL){
+    if (accelerometer_is_data_ready(regs)){
+      accelerometer_x_read(X, regs); // lê os dados do eixo x
+     // set_sprite(sprt_1.data_register, X[0], X[1], sprt_1.offset, sprt_1.active); 
+   
+        int di = pegar_direcao_pac();
+        pacman_altera_posicao(pac, di, mapa2);
+        pacman_movimenta(pac, mapa2);
+   }
+  }
 }
 
-void *mouse_working(void *args) {
-    while (1) {
-        mouse_movement(&action, &power_amount);
-    }
+void *player_2(void *args) {
+  int dj;
+  while (1){
+    mouse_movement(&action, &power_amount);
+    dj = pegar_direcao_phant();
+    printf("X: %d, Y: %d, dir: %d\n", pos_x, pos_y, ph->direcao);
+    //printf("X: %d, Y: %d\n", pos_x, pos_y);
+    phantom_altera_direcao(ph, dj, mapa3);
+    phantom_movimenta(ph, mapa3);
+    phantom_desenha(ph, mapa3);
+   }
 }
 
 void pausar_game() {
