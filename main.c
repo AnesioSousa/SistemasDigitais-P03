@@ -128,6 +128,9 @@ int main() {
     copiar_matriz(SIZE1, SIZE2, mapa3, mapa2);          /*criei essa matriz que é uma copia da matriz de controle para controlar o fantasma sem interferir na matriz de controle que será exibida*/
                                                         /*essa terceira matriz nao interfere na condição de vitoria do fantasma uma vez que ela se baseia nas cordenadas dentro da struct*/
     MAX_POINTS = count_max_points(SIZE1, SIZE2, mapa2); /*define a condição de vitoria de pac*/
+    MAX_POINTS -= 10;/* a primeira posicao que pacman ocupa ao iniciar o jogo nao é contabilizada
+                        logo é necessário considerar essa diferenca ao tratar de sua condição de vitória
+                    */
 
     mudar_cor_generico(SIZE1, SIZE2, mapa2, 2);
     mudar_cor_fundo(SIZE1, SIZE2, mapa2, 9);
@@ -191,6 +194,9 @@ usleep(800000);
             pausar_game();
         if (BUTTON == 3)
             encerrar_jogo();
+        if (BUTTON == 4)
+            resetar_game();
+        
         desenhar_jogo(mapa2);
     }
     print_map(mapa2);
@@ -818,6 +824,42 @@ void pausar_game() {
             break;
         }
     }
+}
+
+void resetar_game(){
+    BUTTON = 0;
+    
+    clear_poligonos();
+    clear_sprites();
+    limpar_tela();
+    /*
+    ao reiniciar o jogo e necessario que as matrizes 2 e 3 voltem ao seu estado inicial
+    por isso elas sao zeradas,invertidas e copiadas novamente.
+    */
+    mapa2 = {{0}};
+    mapa3 = {{0}};
+
+    copiarMatriz(SIZE1, SIZE2, mapa2, map);
+    invert_map(SIZE1, SIZE2, mapa2);
+    copiarMatriz(SIZE1, SIZE2, mapa3, mapa2);
+
+    MAX_POINTS = count_max_points(SIZE1, SIZE2, mapa2); /*define a condição de vitoria de pac*/
+    MAX_POINTS -= 10;
+
+    mudar_cor_generico(SIZE1, SIZE2, mapa2, 2);
+    mudar_cor_fundo(SIZE1, SIZE2, mapa2, 9);
+    ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+
+    state = 1;
+
+    pac = pacman_create(1, 1);
+    posicionar_pacman(1, 1, mapa2);
+
+    ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+
+    ph = phantom_create(13, 18);
+    posicionar_phantom(13, 18, mapa3);
+
 }
 
 void *buttons_thread(void *args) {
