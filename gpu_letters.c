@@ -235,3 +235,11 @@ void definirLetraJ(char matriz[5][5]) {
     matriz[3][0] = 1;matriz[3][2] = 1; // Lado esquerdo
     matriz[4][0] = 1;matriz[4][1] = 1; matriz[4][2] = 1; // Curva para baixo
 };
+
+void definirLetraC(char matriz[5][5]){
+    matriz[0][2] = 1; matriz[0][3] = 1;matriz[0][4] = 1; // Parte superior(está sem o ultimo ponto)
+    matriz[1][1] = 1;
+    matriz[2][1] = 1;
+    matriz[3][1] = 1;
+    matriz[4][2] = 1; matriz[4][3] = 1;matriz[4][4] = 1; // Parte inferior 
+}
