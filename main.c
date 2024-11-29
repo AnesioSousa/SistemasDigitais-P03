@@ -61,6 +61,8 @@ void inicializacao_accel();
 void *accel_working(void *args);
 void *mouse_working(void *args);
 
+void *button_threads(void *args);
+
 /*Button*/
 int LISTEN_BTN = 1, BUTTON = 0;
 /*accel*/
@@ -128,9 +130,9 @@ int main() {
     copiar_matriz(SIZE1, SIZE2, mapa3, mapa2);          /*criei essa matriz que é uma copia da matriz de controle para controlar o fantasma sem interferir na matriz de controle que será exibida*/
                                                         /*essa terceira matriz nao interfere na condição de vitoria do fantasma uma vez que ela se baseia nas cordenadas dentro da struct*/
     MAX_POINTS = count_max_points(SIZE1, SIZE2, mapa2); /*define a condição de vitoria de pac*/
-    MAX_POINTS -= 10;/* a primeira posicao que pacman ocupa ao iniciar o jogo nao é contabilizada
-                        logo é necessário considerar essa diferenca ao tratar de sua condição de vitória
-                    */
+    MAX_POINTS -= 10;                                   /*a primeira posicao que pacman ocupa ao iniciar o jogo nao é contabilizada
+                                                          logo é necessário considerar essa diferenca ao tratar de sua condição de vitória
+                                                        */
 
     mudar_cor_generico(SIZE1, SIZE2, mapa2, 2);
     mudar_cor_fundo(SIZE1, SIZE2, mapa2, 9);
@@ -328,7 +330,11 @@ void posicionar_pacman(int x, int y, char mapa2[SIZE1][SIZE2]) {
     pac->x = x;
     pac->y = y;
     mapa2[x][y] = 6; /*Numero que representa o pacman na matriz de controle(mapa2)*/
-    desenhar_sprite(1, 1 + ((pac->y) * 3) * 8, ((pac->x) * 3) * 8, 0, 1);
+    desenhar_sprite(1, 1 + ((pac->y) * 3) * 8, ((pac->x) * 3) * 8, 0, 1); /* A forma com que os sprites sao posicionados se assemelha muito com a forma que a função desenhar_quadrado
+                                                                             é implementada na gpu_lib, faz-se necessário que o espaçamento de um quadrado para outro(para este jogo o valor é 3) seja respeitado     
+                                                                             e também e preciso que haja uma compensação tanto para o deslocamento utilizado para centralizar o sprite(+1) quanto para manter um
+                                                                             deslocamento proporcional(*8)
+                                                                        */
     // desenhar_sprite(1, ((i + 1) + (pac->yi + 1) * 3)*8,(((pac->x) * 3) + 1)*8-7,1,1);
 }
 
@@ -415,8 +421,9 @@ void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
             pac->yj = pac->y;
 
             pontua_verif(pac, mapa2);
-            pacman_desenha(pac, mapa2);
-
+            pacman_desenha(pac, mapa2); /*nos casos em que há uma subtração de linha ou coluna na matriz é necessario que haja uma mudança na ordem das funções
+                                          para que a animação ocorra com fluidez
+                                        */
             posicionar_pacman(((pac->x) - 1), (pac->y), mapa2);
         } else {
             pac->direcao = 0;
@@ -457,20 +464,6 @@ void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
         break;
     }
     mapa2[(pac->xi)][pac->yi] = 0;
-}
-
-int tem_parede(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*nao esta sendo utilizada*/
-    if (mapa2[pac->x + 1][pac->y] < 9 && pac->direcao == 3) {
-        return 0;
-    } else if (mapa2[pac->x][pac->y + 1] < 9 && pac->direcao == 1) {
-        return 0;
-    } else if (mapa2[pac->x - 1][pac->y] < 9 && pac->direcao == 4) {
-        return 0;
-    } else if (mapa2[pac->x][pac->y - 1] < 9 && pac->direcao == 2) {
-        return 0;
-    }
-    // printf("tem parede");
-    return 1;
 }
 
 void pacman_desenha(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*funcao responsavel pela animacao de pacman*/
@@ -828,7 +821,7 @@ void pausar_game() {
 
 void resetar_game(){
     BUTTON = 0;
-    
+
     clear_poligonos();
     clear_sprites();
     limpar_tela();
