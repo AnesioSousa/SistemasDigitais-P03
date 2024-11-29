@@ -302,7 +302,7 @@ Pacman *pacman_create(int x, int y) {
         pac->passo = 4;
         pac->vivo = 1;
         pac->status = 0;
-        pac->direcao = 0; /*vou definir que 0 = parado; 1 = direita,2 = esquerda,3 = p/ cima,4 = p/baixo*/
+        pac->direcao = 0; /*vou definir que 0 = parado; 1 = direita,2 = esquerda,3 = p/ baixo,4 = p/cima*/
         pac->parcial = 0;
         pac->x = x;
         pac->y = y;
@@ -339,7 +339,7 @@ void pacman_altera_posicao(Pacman *pac, int direcao, char mapa2[SIZE1][SIZE2]) {
         pac->direcao = direcao;
         break;
     case 1:
-        if (mapa2[(pac->x) + 1][pac->y] < 9) {
+        if (mapa2[(pac->x) + 1][pac->y] < 9) { /*caso não seja parede, altere a direcao*/
             pac->direcao = direcao;
         }
         break;
@@ -366,7 +366,15 @@ void pacman_altera_posicao(Pacman *pac, int direcao, char mapa2[SIZE1][SIZE2]) {
 void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
     if (pac->vivo == 0)
         return;
-
+    /*
+    os elementos xj e yj representam as posicoes futuras de pac, elas se baseiam na sua posicao atual e na sua direcao para decidir as alteracoes necessarias
+    ex: para a direcao == 3(ou seja,pac quer se movimentar para baixo) o xj deve ser atualizado
+    o uso dos elementos xj e yj auxiliam na verificao de paredes(<9)
+    
+    os elementos xi e yi representam as posicoes anteriores de pac, tambem se baseando na sua posicao atual e na sua direcao
+    sao muito utilizados na funcao pacman_desenha para auxiliar nos calculos necessarios da trajetoria de pac de um ponto da matriz a outro
+    tambem sao utilizados para garantir que a posicao anterior a pacman seja apagada
+    */
     switch (pac->direcao) {
     case 0:
         pac->xj = pac->x;
@@ -460,19 +468,14 @@ int tem_parede(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*nao esta sendo utiliza
 }
 
 void pacman_desenha(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*funcao responsavel pela animacao de pacman*/
-    /*por enquanto nao utiliza sprites*/
     int i;
-    /*
-     if (tem_parede(pac, mapa2))
-     {
-         printf("achou parede e nao desenhou");
-         return;
-     }*/
 
     if (pac->direcao == 0) { /*nao move*/
         return;
     }
-
+    
+    /*as funcoes a seguir se baseiam na direcao que pacman deseja se locomover(pac->direcao), na sua posicao atual(x ou y ) e na sua posicao anterior(xi ou yi) para desenhar a trajetoria de pac*/
+    /*ha algumas verificoes que sao feitas por conta de algumas peculiaridades da exibição da matriz de controle*/
     if (pac->direcao == 1 && pac->yj < 17 && pac->yj > 0 && pac->y != pac->yj && mapa2[pac->x][pac->yj] < 9) { /*move para frente*/
         for (i = 0; i < (pac->passo) - 1; i++) {
             {
