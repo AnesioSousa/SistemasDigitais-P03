@@ -363,6 +363,144 @@ void escrever_GameOver(int corG, int corA, int corM, int corE, int corO, int cor
 	ler_matriz(5, 60, GameOver, 1, posX, posY, tamanho);
 }
 
+void escrever_PacMan(int corP, int corA, int corC, int corHifen, int corM, int corN, int posX, int posY, int espacamento, int tamanho)
+{
+    char pacman[5][41] = {{0}};
+    char letraP[5][5] = {{0}}, letraA[5][5] = {{0}}, letraC[5][5] = {{0}}, hifen[5][5] = {{0}}, letraN[5][5] = {{0}}, letraM[5][5] = {{0}};
+    int i, j;
+    // Definindo as letras
+    definirLetraP(letraP);
+    mudarCor(5, 5, letraP, corP);
+
+    definirLetraA(letraA);
+    mudarCor(5, 5, letraA, corA);
+
+    definirLetraC(letraC);
+    mudarCor(5, 5, letraC, corC);
+
+    definirHifen(hifen);
+    mudarCor(5, 5, hifen, corHifen);
+
+    definirLetraM(letraM);
+    mudarCor(5, 5, letraM, corM);
+
+    definirLetraN(letraN);
+    mudarCor(5, 5, letraN, corN);
+
+    // Concatenando as letras na matriz
+    for (i = 0; i < 5; i++)
+    {
+        for (j = 0; j < 5; j++)
+        {
+            pacman[i][j] = letraP[i][j];      // P
+            pacman[i][6 + j] = letraA[i][j];  // A
+            pacman[i][12 + j] = letraC[i][j]; // C
+            pacman[i][18 + j] = hifen[i][j];  // -
+            pacman[i][24 + j] = letraM[i][j]; // M
+            pacman[i][30 + j] = letraA[i][j]; // A
+            pacman[i][36 + j] = letraN[i][j]; // N
+        }
+    }
+    ler_matriz(5, 41, pacman, espacamento, posX, posY, tamanho);
+}
+
+void escrever_Phantom(int corP, int corH, int corA, int corN, int corT, int corO, int corM, int posX, int posY, int espacamento, int tamanho)
+{
+    char phantom[5][41] = {{0}};
+    char letraP[5][5] = {{0}}, letraH[5][5] = {{0}}, letraA[5][5] = {{0}}, letraN[5][5] = {{0}}, letraT[5][5] = {{0}}, letraO[5][5] = {{0}}, letraM[5][5] = {{0}};
+    int i, j;
+    // Definindo as letras
+    definirLetraP(letraP);
+    mudarCor(5, 5, letraP, corP);
+
+    definirLetraH(letraH);
+    mudarCor(5, 5, letraH, corH);
+
+    definirLetraA(letraA);
+    mudarCor(5, 5, letraA, corA);
+
+    definirLetraN(letraN);
+    mudarCor(5, 5, letraN, corN);
+
+    definirLetraT(letraT);
+    mudarCor(5, 5, letraT, corT);
+
+    definirLetraO(letraO);
+    mudarCor(5, 5, letraO, corO);
+
+    definirLetraM(letraM);
+    mudarCor(5, 5, letraM, corM);
+
+    // Concatenando as letras na matriz
+    for (i = 0; i < 5; i++)
+    {
+        for (j = 0; j < 5; j++)
+        {
+            phantom[i][j] = letraP[i][j];      // P
+            phantom[i][6 + j] = letraH[i][j];  // H
+            phantom[i][12 + j] = letraA[i][j]; // A
+            phantom[i][18 + j] = letraN[i][j]; // N
+            phantom[i][24 + j] = letraT[i][j]; // T
+            phantom[i][30 + j] = letraO[i][j]; // O
+            phantom[i][36 + j] = letraM[i][j]; // M
+        }
+    }
+    ler_matriz(5, 41, phantom, espacamento, posX, posY, tamanho);
+}
+
+void escrever_Wins(int corW, int corI, int corN, int corS,int corExclamacao, int posX, int posY,int espacamento, int tamanho)
+{
+    char wins[5][31] = {0};
+    char letraW[5][5]= {{0}}, letraI[5][5]= {{0}}, letraN[5][5]= {{0}}, letraS[5][5]= {{0}},exclamacao[5][5] = {{0}};
+    int i, j;
+
+    definirLetraW(letraW);
+    mudarCor(5, 5, letraW, corW);
+
+    definirLetraI(letraI);
+    mudarCor(5, 5, letraI, corI);
+
+    definirLetraN(letraN);
+    mudarCor(5, 5, letraN, corN);
+
+    definirLetraS(letraS);
+    mudarCor(5, 5, letraS, corS);
+    
+    definirExclamacao(exclamacao);
+    mudarCor(5, 5, exclamacao, corExclamacao);
+
+    for (i = 0; i < 5; i++)
+    {
+        for (j = 0; j < 5; j++)
+        {
+            wins[i][j] = letraW[i][j]; //W
+            wins[i][6 + j] = letraI[i][j];//I
+            wins[i][12 + j] = letraN[i][j];//N
+            wins[i][18 + j] = letraS[i][j];//S
+            wins[i][24 + j] = exclamacao[i][j]; // ! ! !
+        }
+    }
+
+    ler_matriz(5, 31, wins, espacamento, posX, posY, tamanho);
+}
+
+void escrever_PacWins(int posX, int posY,int espacamento, int tamanho){
+    escrever_PacMan(3,3,3,2,3,3,posX,posY,espacamento,tamanho);
+    escrever_Wins(1,1,1,1,7,posX+5,posY*espacamento,espacamento,tamanho); /*multipliquei o posY pelo espacamento na intenção de ser possível mudar o tamanho dos 2 sem problemas de sobreposição*/
+    /*
+        P A C - M A N
+         W I N S !!! 
+    */
+}
+
+void escrever_PhantomWins(int posX, int posY,int espacamento, int tamanho){
+    escrever_Phantom(7,7,7,7,7,7,7,posX,posY,espacamento,tamanho);
+    escrever_Wins(1,1,1,1,3,posX+5,posY*espacamento,espacamento,tamanho); /*multipliquei o posY pelo espacamento na intenção de ser possível mudar o tamanho dos 2 sem problemas de sobreposição*/
+    /*
+        P H A N T O M
+         W I N S !!! 
+    */
+}
 void escreverPause(int corP, int corA, int corU, int corS, int corE, int posX, int posY, int tamanho) {
 	char Pause[5][36] = {{0}};
 	char letraP[5][5] = {{0}}, letraA[5][5] = {{0}}, letraU[5][5] = {{0}}, letraS[5][5] = {{0}}, letraE[5][5] = {{0}};
