@@ -257,3 +257,34 @@ void definirLetraW(char matriz[5][5]) {
     matriz[3][0] = 1; matriz[3][1] = 1; matriz[3][3] = 1; matriz[3][4] = 1; // Laterais internas
     matriz[4][0] = 1; matriz[4][4] = 1; // Colunas laterais
 }
+void definirHifen(char matriz[5][5]) {
+
+    matriz[2][1] = 1; matriz[2][2] = 1; matriz[2][3] = 1; // Linha horizontal central
+}
+
+void definirExclamacao(char matriz[5][5]) {
+    /*exclamação começo*/
+    matriz[0][0] = 1; // Parte superior
+    matriz[1][0] = 1;
+    matriz[2][0] = 1; // Corpo principal
+    matriz[3][0] = 0;
+    matriz[4][0] = 1; 
+
+
+    /*exclamação meio*/
+    matriz[0][2] = 1; // Parte superior
+    matriz[1][2] = 1;
+    matriz[2][2] = 1; // Corpo principal
+    matriz[3][2] = 0;
+    matriz[4][2] = 1;
+
+
+    /*exclamação fim*/
+    matriz[0][4] = 1; // Parte superior
+    matriz[1][4] = 1;
+    matriz[2][4] = 1; // Corpo principal
+    matriz[3][4] = 0;
+
+    matriz[4][4] = 1; // Ponto inferior
+    
+}
