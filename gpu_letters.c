@@ -243,3 +243,17 @@ void definirLetraC(char matriz[5][5]){
     matriz[3][1] = 1;
     matriz[4][2] = 1; matriz[4][3] = 1;matriz[4][4] = 1; // Parte inferior 
 }
+void definirLetraH(char matriz[5][5]) {
+    matriz[0][0] = 1; matriz[0][4] = 1; // Colunas laterais
+    matriz[1][0] = 1; matriz[1][4] = 1; // Colunas laterais
+    matriz[2][0] = 1; matriz[2][1] = 1; matriz[2][2] = 1; matriz[2][3] = 1; matriz[2][4] = 1; // Centro
+    matriz[3][0] = 1; matriz[3][4] = 1; // Colunas laterais
+    matriz[4][0] = 1; matriz[4][4] = 1; // Colunas laterais
+}
+void definirLetraW(char matriz[5][5]) {
+    matriz[0][0] = 1; matriz[0][4] = 1; // Colunas laterais
+    matriz[1][0] = 1; matriz[1][4] = 1; // Colunas laterais
+    matriz[2][0] = 1; matriz[2][2] = 1; matriz[2][4] = 1; // Ponto central inferior
+    matriz[3][0] = 1; matriz[3][1] = 1; matriz[3][3] = 1; matriz[3][4] = 1; // Laterais internas
+    matriz[4][0] = 1; matriz[4][4] = 1; // Colunas laterais
+}
