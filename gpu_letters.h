@@ -28,3 +28,5 @@ void definirDoisPontos(char matriz[5][5]);
 void definirLetraC(char matriz[5][5]); 
 void definirLetraH(char matriz[5][5]);
 void definirLetraW(char matriz[5][5]);
+void definirExclamacao(char matriz[5][5]);
+void definirHifen(char matriz[5][5]);
