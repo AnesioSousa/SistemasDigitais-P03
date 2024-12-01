@@ -214,7 +214,27 @@ usleep(800000);
 void encerrar_jogo() { /*por enquanto nao diferencia quem ganhou*/
 
     state = 2;
-    escrever_GameOver(1, 1, 1, 1, 1, 1, 1, 14, 25, 2); /*provisorio*/
+
+    if (pac->vivo == 0)
+    {/*phantom ganhou*/
+        clear_poligonos();
+        clear_sprites();
+        limpar_tela();
+        escrever_PhantomWins(4,10,2,2);
+    }else if (pac->vivo ==1 && pac->pontos == MAX_POINTS)
+    {/*pacman ganhou e atingiu o máximo de pontos*/
+        clear_poligonos();
+        clear_sprites();
+        limpar_tela();
+        escrever_PacWins(4,10,2,2);
+    }else{/*essa funcao é um teste e provavelmente será retirada antes da entrega, mas se a tela de game over aparecer
+            provavelmente os pontos não estão sendo contados corretamente
+        */
+        clear_poligonos();
+        clear_sprites();
+        limpar_tela();
+        escrever_GameOver(1, 1, 1, 1, 1, 1, 1, 14, 25, 2); /*provisorio*/   
+    }
 }
 
 /*esse tipo de funcao pode ser replicado para o mouse*/
@@ -771,6 +791,13 @@ void mudar_cor_generico(int linhas, int colunas, char matriz[linhas][colunas], i
                 matriz[i][j] = cor;
 }
 
+void zerar_matriz(int linhas, int colunas, char matriz[linhas][colunas]){
+    int i, j;
+    for (i = 0; i < linhas; i++) 
+        for (j = 0; j < colunas; j++) 
+            matriz[i][j] = 0;
+}
+
 void print_map(char map[SIZE1][SIZE2]) {
     for (int i = 0; i < SIZE1; i++) {
         for (int j = 0; j < SIZE2; j++) {
@@ -792,7 +819,7 @@ void *player_1(void *args) {
     if (accelerometer_is_data_ready(regs)){
       accelerometer_x_read(X, regs); // lê os dados do eixo x
      // set_sprite(sprt_1.data_register, X[0], X[1], sprt_1.offset, sprt_1.active); 
-   
+        while (state != 1 || pause_game ==1){};/*pausar thread enquanto o estado do jogo for diferente de 1(em jogo) ou variável pause game for acionada(botao)*/
         int di = pegar_direcao_pac();
         pacman_altera_posicao(pac, di, mapa2);
         pacman_movimenta(pac, mapa2);
@@ -804,6 +831,7 @@ void *player_2(void *args) {
   int dj;
   while (1){
     mouse_movement(&action, &power_amount);
+    while (state != 1 || pause_game ==1){};/*pausar thread enquanto o estado do jogo for diferente de 1(em jogo) ou variável pause game for acionada(botao)*/
     dj = pegar_direcao_phant();
     printf("X: %d, Y: %d, dir: %d\n", pos_x, pos_y, ph->direcao);
     //printf("X: %d, Y: %d\n", pos_x, pos_y);
@@ -841,7 +869,9 @@ void resetar_game(){
     */
     //mapa2 = {{0}};
     //mapa3 = {{0}};
-
+    zerar_matriz(SIZE1,SIZE2,mapa2);
+    zerar_matriz(SIZE1,SIZE2,mapa3);
+    
     copiar_matriz(SIZE1, SIZE2, mapa2, map);
     invert_map(SIZE1, SIZE2, mapa2);
     copiar_matriz(SIZE1, SIZE2, mapa3, mapa2);
