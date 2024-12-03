@@ -61,6 +61,9 @@ void inicializacao_accel();
 void *player_1(void *args);
 void *player_2(void *args);
 
+void *pac_text_thread(void *args);
+void *ph_text_thread(void *args);
+
 void *buttons_thread(void *args);
 
 /*Button*/
@@ -102,7 +105,7 @@ char mapa3[SIZE1][SIZE2] = {{0}};
 
 int main() {
     mapear_gpu();
-    pthread_t thread_player_1, thread_player_2, thread_button;
+    pthread_t thread_player_1, thread_player_2, thread_button, text_pac, text_ph ;
 
     inicializacao_accel();
     if (!open_mouse_device()) {
@@ -114,6 +117,8 @@ int main() {
     setar_cor_pixel_sprite(1, 1, 1, 1);
   
     pthread_create(&thread_button, NULL, buttons_thread, NULL);
+    pthread_create(&text_pac, NULL, pac_text_thread, NULL); 
+    pthread_create(&text_ph, NULL, ph_text_thread, NULL); 
     pthread_create(&thread_player_1, NULL, player_1, NULL);
     pthread_create(&thread_player_2, NULL, player_2, NULL);
 
@@ -204,6 +209,8 @@ usleep(800000);
     pthread_join(thread_button, NULL);
     pthread_join(thread_player_1, NULL);
     pthread_join(thread_player_2, NULL);
+    pthread_join(text_pac, NULL);
+    pthread_join(text_ph, NULL);
     close_mouse_device();
     desmapear_gpu();
     return 0;
@@ -916,3 +923,41 @@ void *buttons_thread(void *args) {
     }
     return NULL;
 }
+void *pac_text_thread(void *args){
+    int i;
+    char vazia[5][41] = {{0}};
+    while(1){
+    for (i = 0; i < 40; i++)
+    {
+        escrever_PacMan(3,3,3,3,3,3,i,49,1,1);
+        usleep(80000);
+        ler_matriz(5,41,vazia,1,i,49,1);
+    }
+    for (i = 39; i >-1; i--)
+    {
+        escrever_PacMan(3,3,3,3,3,3,i,49,1,1);
+        usleep(80000);
+        ler_matriz(5,41,vazia,1,i,49,1);
+    }
+ }
+}
+
+
+void *ph_text_thread(void *args){
+    int i;
+    char vazia[5][41] = {{0}};
+    while(1){
+    for (i = 39; i >-1; i--)
+    {
+        escrever_Phantom(1,1,1,1,1,1,1,i,54,1,1);
+        usleep(80000);
+        ler_matriz(5,41,vazia,1,i,54,1);
+    }
+    for (i = 0; i < 40; i++)
+    {
+        escrever_Phantom(1,1,1,1,1,1,1,i,54,1,1);
+        usleep(80000);
+        ler_matriz(5,41,vazia,1,i,54,1);
+    }
+
+ }
