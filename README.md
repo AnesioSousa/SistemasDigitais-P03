@@ -76,6 +76,7 @@ Esses registradores são manipulados para inicializar e controlar a comunicaçã
 <br>
 # Processador gráfico
 O processador gráfico CoLenda é uma GPU desenvolvida em FPGA que gerencia polígonos convexos, como triângulos e quadrados, além de sprites em monitores VGA com resolução de 640x480 pixels. Ele opera em conjunto com um processador de propósito geral, como o Nios II, responsável pela lógica do jogo, enquanto o processador gráfico gerencia exclusivamente a renderização. Os sprites e outros elementos gráficos são armazenados em memórias dedicadas no hardware, como uma memória de sprites para imagens e uma memória de fundo para o cenário do jogo.
+<br>
 O processador gráfico realiza a renderização em tempo real. Ele gera os sinais necessários para monitores VGA, incluindo sincronização e dados de cor RGB, com uma taxa de atualização de 60 quadros por segundo. A comunicação entre o processador principal e o gráfico ocorre via FIFOs (First In, First Out), que armazenam comandos enviados pelo processador principal.
 Além disso, o sistema possui um co-processador especializado em desenhar polígonos, como quadrados e triângulos, utilizando cálculos geométricos para determinar quais pixels pertencem à área de renderização.
 
