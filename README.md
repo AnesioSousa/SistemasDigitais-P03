@@ -18,9 +18,9 @@ Biblioteca com funções gráficas para o Processador Gráfico CoLenda, que perm
 PAC-MAN é um de arcade clássico que evoluiu significativamente desde sua apresentação à comunidade em 1980 pela Namco. As diretivas do game são simples, porém super engajadoras. O jogador controla o PAC-MAN, navegando ele através de um labirinto e enquanto anda o PAC-MAN vai consumindo pellets e a pontuação vai aumentando conforme a quantidade consumida por ele. O jogador deve sempre lembrar de evitar contato com os fantasmas coloridos.
 
 # A mecânica do game 
-Objetivo: O objetivo principal do jogo é consumir todas as pellets no labirinto enquando se evita ser pego pelos fantasmas. Comer as pellets maiores (chamadas de pellets do poder) faz com que o PAC-MAN temporariamente vire o jogo contra os fantastasmas, o tornando invulnerável e destruindo qualquer fastasma que o tocar.
+**Objetivo:** O objetivo principal do jogo é consumir todas as pellets no labirinto enquando se evita ser pego pelos fantasmas. Comer as pellets maiores (chamadas de pellets do poder) faz com que o PAC-MAN temporariamente vire o jogo contra os fantastasmas, o tornando invulnerável e destruindo qualquer fastasma que o tocar.
 
-Nívels e labirintos: O jogo consistem de múltiplos léveis, cada um com um design único de labirinto. A medida que os jogadores vão melhorando, a velocidade e o comportamento dos fantasmas vão se tornando mais desafiadores.
+**Nívels e labirintos:** O jogo consistem de múltiplos léveis, cada um com um design único de labirinto. A medida que os jogadores vão melhorando, a velocidade e o comportamento dos fantasmas vão se tornando mais desafiadores.
 
 # Adaptações modernas
 Na nossa versão do game, temos somente um labirinto, o objetivo de consumir todas as pellets ainda se mantém e o pacman ainda deve evitar contato com fantasmas. As diferenças começam na jogabilidade já que no jogo original os fantasmas perseguem automaticamente o PAC-MAN, e na nossa versão há somente um fantasma e ele é controlado por um segundo jogador utilizando o mouse.
@@ -74,9 +74,13 @@ Esses registradores são manipulados para inicializar e controlar a comunicaçã
 <br>
 **IC_ENABLE_STATUS (0x9C):** Indica o status de habilitação do controlador.
 <br>
+# Processador gráfico
+O processador gráfico CoLenda é uma GPU desenvolvida em FPGA que gerencia polígonos convexos, como triângulos e quadrados, além de sprites em monitores VGA com resolução de 640x480 pixels. Ele opera em conjunto com um processador de propósito geral, como o Nios II, responsável pela lógica do jogo, enquanto o processador gráfico gerencia exclusivamente a renderização. Os sprites e outros elementos gráficos são armazenados em memórias dedicadas no hardware, como uma memória de sprites para imagens e uma memória de fundo para o cenário do jogo.
+O processador gráfico realiza a renderização em tempo real. Ele gera os sinais necessários para monitores VGA, incluindo sincronização e dados de cor RGB, com uma taxa de atualização de 60 quadros por segundo. A comunicação entre o processador principal e o gráfico ocorre via FIFOs (First In, First Out), que armazenam comandos enviados pelo processador principal.
+Além disso, o sistema possui um co-processador especializado em desenhar polígonos, como quadrados e triângulos, utilizando cálculos geométricos para determinar quais pixels pertencem à área de renderização.
 
 # Desenvolvimento
-O projeto foi dividido em módulos para um melhor desenvolvimento. Sendo os modulo um com jogo Tetris, acelerômetro, biblioteca em assembly e algumas funções extras.
+O projeto foi dividido em módulos para um melhor desenvolvimento. Sendo os modulo um com jogo Pac-Man, acelerômetro, biblioteca em assembly e algumas funções extras.
 
 ## Acelerometro
 Nesse modulo a implementação de comunicação I2C para um acelerômetro (ADXL345), onde o código acessa o dispositivo através do /dev/mem e manipula os registradores diretamente. 
@@ -108,12 +112,7 @@ $ make
 ```
 <h3> ⚠ Atenção! O sistema também depende da instalação prévia da biblioteca IntelFPGAUP!</h31>
 
-# Controles da placa 
-- Botão 1: Inicia o jogo.
-- Botão 2: Pausa o jogo. (Para sair de pausa basta aperta qualquer botão)
-- Botão 3: Finaliza o jogo.
-- Botão 4: Rotaciona a peça.
-- Ao rotacionar a placa para direita ou esquerda ira mover a peça.
+
 
 # Conclusão
 Para a realização deste projeto, foi fundamental aplicar conhecimentos de interação entre hardware e software para desenvolvimento do produto final. A compreensão dos princípios da arquitetura da DE1-SoC, do mapeamento de memória, da programação em assembly e em C, bem como o uso da interface de comunicação I2C, da saída de vídeo VGA e de periféricos como botões, foram essenciais para integrar esses elementos. Ao final, o projeto atingiu os objetivos estabelecidos, proporcionando uma experiência de jogo completa e promovendo o aperfeiçoamento no uso de mapeamento de memória e na programação em assembly. Trabalhar com uma linguagem de baixo nível como o assembly, trouxe uma nova visão para o desenvolvimento de código, resultando em melhorias no desenvolvimento de software em geral.
@@ -133,4 +132,5 @@ NAJIBGHADRI. Disponivel em: <https://github.com/najibghadri/Tetris200lines/tree/
 <br>
 VIMFULDANG. Disponivel em: <https://github.com/VimfulDang/ADXL345-Accelerometer-DE1-SOC>. Acesso em: 20/09/2024
 <br>
+G.L. Ronald J.Tocci, Neal S.Widmer, Sistemas Digitais Princípios e Aplicações. Pearson, 2019.
 
