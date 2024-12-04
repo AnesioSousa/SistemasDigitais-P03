@@ -28,7 +28,7 @@ typedef enum {
 
 typedef struct TPacman {
     int status;
-    int x, y, xi, yi, xj, yj;
+    int x, y, x_anterior, y_anterior, x_futuro, y_futuro;
     int direcao, passo, parcial;
     int pontos;
     int invencivel;
@@ -40,7 +40,7 @@ typedef struct TPacman {
 
 typedef struct TPhantom {
     int status;
-    int x, y, xi, yi, xj, yj;
+    int x, y, x_anterior, y_anterior, x_futuro, y_futuro;
     int direcao, passo, parcial;
     int pontos;
     int vivo;
@@ -98,13 +98,12 @@ states state;
 // variaveis globais que precisam de exclusão mútua
 int pause_pellet, pause_accel, pause_mouse, pause_colision;
 
-
 /*Button*/
 int LISTEN_BTN = 1, BUTTON = 0;
 /*accel*/
 int ACCEL = 1, fd;
 I2C_Registers regs;
-static int16_t X[1];
+static int16_t XYZ[1];
 //---------------------------------
 
 char map[SIZE1][SIZE2] = {
@@ -237,7 +236,7 @@ void init_game(){
             //phantom_desenha(ph, mapa3);
 
 
-            printf("x = %d,xj = %d,y = %d, yj = %d, direcao = %d \n", pac->x, pac->xj, pac->y, pac->yj, pac->direcao);
+            printf("x = %d,x_futuro = %d,y = %d, y_futuro = %d, direcao = %d \n", pac->x, pac->x_futuro, pac->y, pac->y_futuro, pac->direcao);
         }
         pacman_altera_posicao(pac, 2, mapa2);
 
@@ -262,7 +261,7 @@ usleep(800000);
             encerrar_jogo();
             break;
             }
-            printf("x = %d,xj = %d,y = %d, yj = %d, direcao = %d \n", pac->x, pac->xj, pac->y, pac->yj, pac->direcao);
+            printf("x = %d,x_futuro = %d,y = %d, y_futuro = %d, direcao = %d \n", pac->x, pac->x_futuro, pac->y, pac->y_futuro, pac->direcao);
         }
 */  
 
@@ -280,6 +279,7 @@ void pausar_game() {
 
 void menu() {
     state = in_menu;
+    char btn_pressed;
     while(state != finish) {
         //INICIAR
         if (BUTTON == 1 && state == in_menu) {
@@ -287,13 +287,13 @@ void menu() {
             init_game();
         //PAUSAR
         } else if (BUTTON == 2 && state == running) {
-            state = in_pause;
             BUTTON = -1;
+            state = in_pause;
             printf("Pause\n");
             pausar_game();
         //DESPAUSAR
         } else if (BUTTON == 2 && state == in_pause) {
-            BUTTON = 1;
+            BUTTON = -1;
             state = running;
             printf("Despausou\n");
             //return_screen();
@@ -301,22 +301,12 @@ void menu() {
         } else if (BUTTON == 3) {
             printf("Encerrou\n");
             encerrar_jogo();
-        } else if (BUTTON == 4  || state == in_menu)  {
+        } else if (BUTTON == 4) {
             state = in_menu;
             printf("No Menu\n");
             limpar_tela();
             clear_sprites();
             pause_threads();
-            /*clean_all_obstacles(screen_obs, obstacle_on_screen_status);
-            for(int i = 0; i < 10; i++){
-                if (bullets[i]) {
-                    bullets[i] = 0;
-                }
-            }
-            pac->pontos = 0;
-            ph->pontos = 0;
-            draw_cover_art();
-            set_menu();*/
         } 
 
     }
@@ -324,6 +314,8 @@ void menu() {
 }
 
 int main() {
+    pause_accel = 0;
+
     mapear_gpu();
 
     inicializacao_accel();
@@ -346,7 +338,7 @@ int main() {
     pthread_cond_init(&pellets_cond, NULL);
     pthread_cond_init(&colision_cond, NULL);
 
-    //pthread_create(&thread_player_1, NULL, player_1, NULL);
+    pthread_create(&thread_player_1, NULL, player_1, NULL);
     //pthread_create(&thread_player_2, NULL, player_2, NULL);
     pthread_create(&colision_thread, NULL, colision_routine, NULL);
     pthread_create(&thread_button, NULL, buttons_thread, NULL);
@@ -369,12 +361,6 @@ int main() {
     pause_accel = 0;
     pause_mouse = 0;
     pause_colision = 0;
-
-    // condicionais utilizadas
-    pthread_cond_t player_1_cond;
-    pthread_cond_t player_2_cond;
-    pthread_cond_t pellets_cond;
-    pthread_cond_t colision_cond;
 
     pthread_cond_broadcast(&colision_cond);
     pthread_cond_broadcast(&pellets_cond);
@@ -427,20 +413,20 @@ void encerrar_jogo() { /*por enquanto nao diferencia quem ganhou*/
     }
 }
 
-/*esse tipo de funcao pode ser replicado para o mouse*/
-int pegar_direcao_pac() { /*no momento retorna somente o X*/
+//esse tipo de funcao pode ser replicado para o mouse
+int pegar_direcao_pac() { //no momento retorna somente o X
     int direcao;
-    if (X[0] > 20) {
+    if (XYZ[0] > 20) {
         direcao = 1;
-    } else if (X[0] < -20) {
+    } else if (XYZ[0] < -20) {
         direcao = 2;
-    } else if (X[1] > 20) {
+    } else if (XYZ[1] > 20) {
         direcao = 4;
-    } else if (X[1] < -20) {
+    } else if (XYZ[1] < -20) {
         direcao = 3;
     } else
         direcao = 0;
-    printf("%d \n", X[1]);
+    printf("%d \n", XYZ[1]);
     return direcao;
 }
 
@@ -521,10 +507,10 @@ Pacman *pacman_create(int x, int y) {
         pac->parcial = 0;
         pac->x = x;
         pac->y = y;
-        pac->xi = x;
-        pac->yi = y;
-        pac->xj = x;
-        pac->yj = y;
+        pac->x_anterior = x;
+        pac->y_anterior = y;
+        pac->x_futuro = x;
+        pac->y_futuro = y;
         pac->data_register = 31;
     }
     return pac;
@@ -543,12 +529,12 @@ void posicionar_pacman(int x, int y, char mapa2[SIZE1][SIZE2]) {
                                                                              e também e preciso que haja uma compensação tanto para o deslocamento utilizado para centralizar o sprite(+1) quanto para manter um
                                                                              deslocamento proporcional(*8)
                                                                         */
-    // desenhar_sprite(1, ((i + 1) + (pac->yi + 1) * 3)*8,(((pac->x) * 3) + 1)*8-7,1,1);
+    // desenhar_sprite(1, ((i + 1) + (pac->y_anterior + 1) * 3)*8,(((pac->x) * 3) + 1)*8-7,1,1);
 }
 
 void pontua_verif(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
-    if (mapa2[pac->xj][pac->yj] == 2) {
-        mapa2[pac->xi][pac->yi] = 0; /*atualiza o valor da posicao anterior de pac caso ele pontue*/
+    if (mapa2[pac->x_futuro][pac->y_futuro] == 2) {
+        mapa2[pac->x_anterior][pac->y_anterior] = 0; /*atualiza o valor da posicao anterior de pac caso ele pontue*/
         pac->pontos += 10;
     }
 }
@@ -587,18 +573,18 @@ void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
     if (pac->vivo == 0)
         return;
     /*
-    os elementos xj e yj representam as posicoes futuras de pac, elas se baseiam na sua posicao atual e na sua direcao para decidir as alteracoes necessarias
-    ex: para a direcao == 3(ou seja,pac quer se movimentar para baixo) o xj deve ser atualizado
-    o uso dos elementos xj e yj auxiliam na verificao de paredes(<9)
+    os elementos x_futuro e y_futuro representam as posicoes futuras de pac, elas se baseiam na sua posicao atual e na sua direcao para decidir as alteracoes necessarias
+    ex: para a direcao == 3(ou seja,pac quer se movimentar para baixo) o x_futuro deve ser atualizado
+    o uso dos elementos x_futuro e y_futuro auxiliam na verificao de paredes(<9)
 
-    os elementos xi e yi representam as posicoes anteriores de pac, tambem se baseando na sua posicao atual e na sua direcao
+    os elementos x_anterior e y_anterior representam as posicoes anteriores de pac, tambem se baseando na sua posicao atual e na sua direcao
     sao muito utilizados na funcao pacman_desenha para auxiliar nos calculos necessarios da trajetoria de pac de um ponto da matriz a outro
     tambem sao utilizados para garantir que a posicao anterior a pacman seja apagada
     */
     switch (pac->direcao) {
     case 0:
-        pac->xj = pac->x;
-        pac->yj = pac->y;
+        pac->x_futuro = pac->x;
+        pac->y_futuro = pac->y;
 
         pontua_verif(pac, mapa2);
         posicionar_pacman(((pac->x)), (pac->y), mapa2);
@@ -606,11 +592,11 @@ void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
         break;
     case 3:
         if (mapa2[(pac->x) + 1][pac->y] < 9) {
-            pac->xi = pac->x;
-            pac->yi = pac->y;
+            pac->x_anterior = pac->x;
+            pac->y_anterior = pac->y;
 
-            pac->xj = pac->x + 2;
-            pac->yj = pac->y;
+            pac->x_futuro = pac->x + 2;
+            pac->y_futuro = pac->y;
 
             pontua_verif(pac, mapa2);
             posicionar_pacman(((pac->x) + 1), (pac->y), mapa2);
@@ -622,11 +608,11 @@ void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
         break;
     case 4:
         if (mapa2[(pac->x) - 1][pac->y] < 9) {
-            pac->xi = pac->x;
-            pac->yi = pac->y;
+            pac->x_anterior = pac->x;
+            pac->y_anterior = pac->y;
 
-            pac->xj = pac->x - 2;
-            pac->yj = pac->y;
+            pac->x_futuro = pac->x - 2;
+            pac->y_futuro = pac->y;
 
             pontua_verif(pac, mapa2);
             pacman_desenha(pac, mapa2); /*nos casos em que há uma subtração de linha ou coluna na matriz é necessario que haja uma mudança na ordem das funções
@@ -639,11 +625,11 @@ void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
         break;
     case 2:
         if (mapa2[(pac->x)][(pac->y) - 1] < 9) {
-            pac->xi = pac->x;
-            pac->yi = pac->y;
+            pac->x_anterior = pac->x;
+            pac->y_anterior = pac->y;
 
-            pac->xj = pac->x;
-            pac->yj = pac->y - 2;
+            pac->x_futuro = pac->x;
+            pac->y_futuro = pac->y - 2;
 
             pontua_verif(pac, mapa2);
             pacman_desenha(pac, mapa2);
@@ -656,11 +642,11 @@ void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
         break;
     case 1:
         if (mapa2[(pac->x)][(pac->y) + 1] < 9) {
-            pac->xi = pac->x;
-            pac->yi = pac->y;
+            pac->x_anterior = pac->x;
+            pac->y_anterior = pac->y;
 
-            pac->xj = pac->x;
-            pac->yj = pac->y + 2;
+            pac->x_futuro = pac->x;
+            pac->y_futuro = pac->y + 2;
 
             pontua_verif(pac, mapa2);
             posicionar_pacman(((pac->x)), (pac->y + 1), mapa2);
@@ -671,7 +657,7 @@ void pacman_movimenta(Pacman *pac, char mapa2[SIZE1][SIZE2]) {
         }
         break;
     }
-    mapa2[(pac->xi)][pac->yi] = 0;
+    mapa2[(pac->x_anterior)][pac->y_anterior] = 0;
 }
 
 void pacman_desenha(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*funcao responsavel pela animacao de pacman*/
@@ -681,59 +667,59 @@ void pacman_desenha(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*funcao responsave
         return;
     }
 
-    /*as funcoes a seguir se baseiam na direcao que pacman deseja se locomover(pac->direcao), na sua posicao atual(x ou y ) e na sua posicao anterior(xi ou yi) para desenhar a trajetoria de pac*/
+    /*as funcoes a seguir se baseiam na direcao que pacman deseja se locomover(pac->direcao), na sua posicao atual(x ou y ) e na sua posicao anterior(x_anterior ou y_anterior) para desenhar a trajetoria de pac*/
     /*ha algumas verificoes que sao feitas por conta de algumas peculiaridades da exibição da matriz de controle*/
-    if (pac->direcao == 1 && pac->yj < 17 && pac->yj > 0 && pac->y != pac->yj && mapa2[pac->x][pac->yj] < 9) { /*move para frente*/
+    if (pac->direcao == 1 && pac->y_futuro < 17 && pac->y_futuro > 0 && pac->y != pac->y_futuro && mapa2[pac->x][pac->y_futuro] < 9) { /*move para frente*/
         for (i = 0; i < (pac->passo) - 1; i++) {
             {
-                // desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi) * 3, 0, 0, 0, 1);
-                // desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi + 1) * 3, 7, 0, 7, 1);
+                // desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->y_anterior) * 3, 0, 0, 0, 1);
+                // desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->y_anterior + 1) * 3, 7, 0, 7, 1);
                 usleep(80000);
-                // desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi + 1) * 3, 0, 0, 0, 1);
-                desenhar_sprite(1, ((i + 1) + (pac->yi + 1) * 3) * 8, (((pac->x) * 3) + 1) * 8 - 7, 1, 1);
+                // desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->y_anterior + 1) * 3, 0, 0, 0, 1);
+                desenhar_sprite(1, ((i + 1) + (pac->y_anterior + 1) * 3) * 8, (((pac->x) * 3) + 1) * 8 - 7, 1, 1);
                 trocar_status(pac);
             }
         }
     }
 
-    if (pac->direcao == 2 && pac->yj > 0 && pac->yj < 18 && pac->y != pac->yj && mapa2[pac->x][pac->yj] < 9) { /*move para tras*/
+    if (pac->direcao == 2 && pac->y_futuro > 0 && pac->y_futuro < 18 && pac->y != pac->y_futuro && mapa2[pac->x][pac->y_futuro] < 9) { /*move para tras*/
         for (i = (pac->passo) - 1; i > 0; i--) {
             {
-                // desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi) * 3, 0, 0, 0, 1);
-                // desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi - 1) * 3, 7, 0, 7, 1);
+                // desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->y_anterior) * 3, 0, 0, 0, 1);
+                // desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->y_anterior - 1) * 3, 7, 0, 7, 1);
                 usleep(80000);
-                // desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->yi - 1) * 3, 0, 0, 0, 1);
+                // desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->y_anterior - 1) * 3, 0, 0, 0, 1);
 
-                desenhar_sprite(1, ((i + 1) + (pac->yi - 1) * 3) * 8, (((pac->x) * 3) + 1) * 8 - 7, 1, 1);
+                desenhar_sprite(1, ((i + 1) + (pac->y_anterior - 1) * 3) * 8, (((pac->x) * 3) + 1) * 8 - 7, 1, 1);
 
                 trocar_status(pac);
             }
         }
     }
 
-    if (pac->direcao == 3 && pac->xj < 13 && pac->xj > 0 && pac->x != pac->xj && mapa2[pac->xj][pac->y] < 9) { /*move para baixo*/
+    if (pac->direcao == 3 && pac->x_futuro < 13 && pac->x_futuro > 0 && pac->x != pac->x_futuro && mapa2[pac->x_futuro][pac->y] < 9) { /*move para baixo*/
         for (i = 0; i < (pac->passo) - 1; i++) {
             {
-                // desenhar_quadrado((i + 1) + (pac->xi) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
-                // desenhar_quadrado((i + 1) + (pac->xi + 1) * 3, ((pac->y) * 3) + 1, 7, 0, 7, 1);
+                // desenhar_quadrado((i + 1) + (pac->x_anterior) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
+                // desenhar_quadrado((i + 1) + (pac->x_anterior + 1) * 3, ((pac->y) * 3) + 1, 7, 0, 7, 1);
                 usleep(80000);
-                // desenhar_quadrado((i + 1) + (pac->xi + 1) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
+                // desenhar_quadrado((i + 1) + (pac->x_anterior + 1) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
 
-                desenhar_sprite(1, (((pac->y) * 3) + 1) * 8 - 7, ((i + 1) + (pac->xi + 1) * 3) * 8, 1, 1);
+                desenhar_sprite(1, (((pac->y) * 3) + 1) * 8 - 7, ((i + 1) + (pac->x_anterior + 1) * 3) * 8, 1, 1);
                 trocar_status(pac);
             }
         }
     }
 
-    if (pac->direcao == 4 && pac->xj > 0 && pac->xj < 13 && pac->x != pac->xj && mapa2[pac->xj][pac->y] < 9) { /*move para cima*/
+    if (pac->direcao == 4 && pac->x_futuro > 0 && pac->x_futuro < 13 && pac->x != pac->x_futuro && mapa2[pac->x_futuro][pac->y] < 9) { /*move para cima*/
         for (i = (pac->passo) - 1; i > 0; i--) {
             {
-                // desenhar_quadrado((i + 1) + (pac->xi) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
-                // desenhar_quadrado((i + 1) + (pac->xi - 1) * 3, ((pac->y) * 3) + 1, 7, 0, 7, 1);
+                // desenhar_quadrado((i + 1) + (pac->x_anterior) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
+                // desenhar_quadrado((i + 1) + (pac->x_anterior - 1) * 3, ((pac->y) * 3) + 1, 7, 0, 7, 1);
                 usleep(80000);
-                // desenhar_quadrado((i + 1) + (pac->xi - 1) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
+                // desenhar_quadrado((i + 1) + (pac->x_anterior - 1) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
 
-                desenhar_sprite(1, (((pac->y) * 3) + 1) * 8 - 7, ((i + 1) + (pac->xi - 1) * 3) * 8, 1, 1);
+                desenhar_sprite(1, (((pac->y) * 3) + 1) * 8 - 7, ((i + 1) + (pac->x_anterior - 1) * 3) * 8, 1, 1);
                 trocar_status(pac);
             }
         }
@@ -758,10 +744,10 @@ Phantom *phantom_create(int x, int y) {
         ph->parcial = 0;
         ph->x = x;
         ph->y = y;
-        ph->xi = x;
-        ph->yi = y;
-        ph->xj = x;
-        ph->yj = y;
+        ph->x_anterior = x;
+        ph->y_anterior = y;
+        ph->x_futuro = x;
+        ph->y_futuro = y;
     }
     return ph;
 }
@@ -814,19 +800,19 @@ void phantom_movimenta(Phantom *ph, char mapa2[SIZE1][SIZE2]) {
 
     switch (ph->direcao) {
     case 0:
-        ph->xj = ph->x;
-        ph->yj = ph->y;
+        ph->x_futuro = ph->x;
+        ph->y_futuro = ph->y;
 
         posicionar_phantom(((ph->x)), (ph->y), mapa2);
 
         break;
     case 3:
         if (mapa2[(ph->x) + 1][ph->y] < 9) {
-            ph->xi = ph->x;
-            ph->yi = ph->y;
+            ph->x_anterior = ph->x;
+            ph->y_anterior = ph->y;
 
-            ph->xj = ph->x + 2;
-            ph->yj = ph->y;
+            ph->x_futuro = ph->x + 2;
+            ph->y_futuro = ph->y;
 
             posicionar_phantom(((ph->x) + 1), (ph->y), mapa2);
             phantom_desenha(ph, mapa2);
@@ -836,10 +822,10 @@ void phantom_movimenta(Phantom *ph, char mapa2[SIZE1][SIZE2]) {
         break;
     case 4:
         if (mapa2[(ph->x) - 1][ph->y] < 9) {
-            ph->xi = ph->x;
-            ph->yi = ph->y;
-            ph->xj = ph->x - 2;
-            ph->yj = ph->y;
+            ph->x_anterior = ph->x;
+            ph->y_anterior = ph->y;
+            ph->x_futuro = ph->x - 2;
+            ph->y_futuro = ph->y;
 
             phantom_desenha(ph, mapa2);
             posicionar_phantom(((ph->x) - 1), (ph->y), mapa2);
@@ -849,10 +835,10 @@ void phantom_movimenta(Phantom *ph, char mapa2[SIZE1][SIZE2]) {
         break;
     case 2:
         if (mapa2[(ph->x)][(ph->y) - 1] < 9) {
-            ph->xi = ph->x;
-            ph->yi = ph->y;
-            ph->xj = ph->x;
-            ph->yj = ph->y - 2;
+            ph->x_anterior = ph->x;
+            ph->y_anterior = ph->y;
+            ph->x_futuro = ph->x;
+            ph->y_futuro = ph->y - 2;
 
             phantom_desenha(ph, mapa2);
             posicionar_phantom(((ph->x)), (ph->y - 1), mapa2);
@@ -863,10 +849,10 @@ void phantom_movimenta(Phantom *ph, char mapa2[SIZE1][SIZE2]) {
         break;
     case 1:
         if (mapa2[(ph->x)][(ph->y) + 1] < 9) {
-            ph->xi = ph->x;
-            ph->yi = ph->y;
-            ph->xj = ph->x;
-            ph->yj = ph->y + 2;
+            ph->x_anterior = ph->x;
+            ph->y_anterior = ph->y;
+            ph->x_futuro = ph->x;
+            ph->y_futuro = ph->y + 2;
 
             posicionar_phantom(((ph->x)), (ph->y + 1), mapa2);
             phantom_desenha(ph, mapa2);
@@ -892,57 +878,57 @@ void phantom_desenha(Phantom *ph, char mapa2[SIZE1][SIZE2]) { /*funcao responsav
         return;
     }
 
-    if (ph->direcao == 1 && ph->yj < 17 && ph->yj > 0 && ph->y != ph->yj && mapa2[ph->x][ph->yj] < 9) { /*move para frente*/
+    if (ph->direcao == 1 && ph->y_futuro < 17 && ph->y_futuro > 0 && ph->y != ph->y_futuro && mapa2[ph->x][ph->y_futuro] < 9) { /*move para frente*/
         for (i = 0; i < (ph->passo) - 1; i++) {
             {
-                // desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi) * 3, 0, 0, 0, 1);
-                // desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi + 1) * 3, 7, 7, 7, 1);
+                // desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->y_anterior) * 3, 0, 0, 0, 1);
+                // desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->y_anterior + 1) * 3, 7, 7, 7, 1);
                 usleep(80000);
-                // desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi + 1) * 3, 0, 0, 0, 1);
+                // desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->y_anterior + 1) * 3, 0, 0, 0, 1);
 
-                desenhar_sprite(2, ((i + 1) + (ph->yi + 1) * 3) * 8, (((ph->x) * 3) + 1) * 8 - 7, 2, 1);
+                desenhar_sprite(2, ((i + 1) + (ph->y_anterior + 1) * 3) * 8, (((ph->x) * 3) + 1) * 8 - 7, 2, 1);
                 trocar_status_phantom(ph);
             }
         }
     }
 
-    if (ph->direcao == 2 && ph->yj > 0 && ph->yj < 18 && ph->y != ph->yj && mapa2[ph->x][ph->yj] < 9) { /*move para tras*/
+    if (ph->direcao == 2 && ph->y_futuro > 0 && ph->y_futuro < 18 && ph->y != ph->y_futuro && mapa2[ph->x][ph->y_futuro] < 9) { /*move para tras*/
         for (i = (ph->passo) - 1; i > 0; i--) {
             {
-                // desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi) * 3, 0, 0, 0, 1);
-                // desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi - 1) * 3, 7, 7, 7, 1);
+                // desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->y_anterior) * 3, 0, 0, 0, 1);
+                // desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->y_anterior - 1) * 3, 7, 7, 7, 1);
                 usleep(80000);
-                // desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->yi - 1) * 3, 0, 0, 0, 1);
+                // desenhar_quadrado(((ph->x) * 3) + 1, (i + 1) + (ph->y_anterior - 1) * 3, 0, 0, 0, 1);
 
-                desenhar_sprite(2, ((i + 1) + (ph->yi - 1) * 3) * 8, (((ph->x) * 3) + 1) * 8 - 7, 2, 1);
+                desenhar_sprite(2, ((i + 1) + (ph->y_anterior - 1) * 3) * 8, (((ph->x) * 3) + 1) * 8 - 7, 2, 1);
                 trocar_status_phantom(ph);
             }
         }
     }
 
-    if (ph->direcao == 3 && ph->xj < 13 && ph->xj > 0 && ph->x != ph->xj && mapa2[ph->xj][ph->y] < 9) { /*move para baixo*/
+    if (ph->direcao == 3 && ph->x_futuro < 13 && ph->x_futuro > 0 && ph->x != ph->x_futuro && mapa2[ph->x_futuro][ph->y] < 9) { /*move para baixo*/
         for (i = 0; i < (ph->passo) - 1; i++) {
             {
-                // desenhar_quadrado((i + 1) + (ph->xi) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
-                // desenhar_quadrado((i + 1) + (ph->xi + 1) * 3, ((ph->y) * 3) + 1, 7, 7, 7, 1);
+                // desenhar_quadrado((i + 1) + (ph->x_anterior) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
+                // desenhar_quadrado((i + 1) + (ph->x_anterior + 1) * 3, ((ph->y) * 3) + 1, 7, 7, 7, 1);
                 usleep(80000);
-                // desenhar_quadrado((i + 1) + (ph->xi + 1) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
+                // desenhar_quadrado((i + 1) + (ph->x_anterior + 1) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
 
-                desenhar_sprite(2, (((ph->y) * 3) + 1) * 8 - 7, ((i + 1) + (ph->xi + 1) * 3) * 8, 2, 1);
+                desenhar_sprite(2, (((ph->y) * 3) + 1) * 8 - 7, ((i + 1) + (ph->x_anterior + 1) * 3) * 8, 2, 1);
                 trocar_status_phantom(ph);
             }
         }
     }
 
-    if (ph->direcao == 4 && ph->xj > 0 && ph->xj < 13 && ph->x != ph->xj && mapa2[ph->xj][ph->y] < 9) { /*move para cima*/
+    if (ph->direcao == 4 && ph->x_futuro > 0 && ph->x_futuro < 13 && ph->x != ph->x_futuro && mapa2[ph->x_futuro][ph->y] < 9) { /*move para cima*/
         for (i = (ph->passo) - 1; i > 0; i--) {
             {
-                // desenhar_quadrado((i + 1) + (ph->xi) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
-                // desenhar_quadrado((i + 1) + (ph->xi - 1) * 3, ((ph->y) * 3) + 1, 7, 7, 7, 1);
+                // desenhar_quadrado((i + 1) + (ph->x_anterior) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
+                // desenhar_quadrado((i + 1) + (ph->x_anterior - 1) * 3, ((ph->y) * 3) + 1, 7, 7, 7, 1);
                 usleep(80000);
-                // desenhar_quadrado((i + 1) + (ph->xi - 1) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
+                // desenhar_quadrado((i + 1) + (ph->x_anterior - 1) * 3, ((ph->y) * 3) + 1, 0, 0, 0, 1);
 
-                desenhar_sprite(2, (((ph->y) * 3) + 1) * 8 - 7, ((i + 1) + (ph->xi - 1) * 3) * 8, 2, 1);
+                desenhar_sprite(2, (((ph->y) * 3) + 1) * 8 - 7, ((i + 1) + (ph->x_anterior - 1) * 3) * 8, 2, 1);
                 trocar_status_phantom(ph);
             }
         }
@@ -1006,15 +992,129 @@ void inicializacao_accel() {
 }
 
 void *player_1(void *args) {
-    while (ACCEL) {
+  pac = pacman_create(1, 1);
+  posicionar_pacman(1, 1, mapa2);
+  int direcao;
+
+    while ( state != finish ) {
+        //printf("pause_accel: %d\n", pause_accel);
+        pthread_mutex_lock(&player_1_mutex);
+        while(pause_accel){
+            pthread_cond_wait(&player_1_cond, &player_1_mutex);
+        }
+        pthread_mutex_unlock(&player_1_mutex);
+
         if (accelerometer_is_data_ready(regs)) {
-            accelerometer_x_read(X, regs); // lê os dados do eixo x
-                                           // set_sprite(sprt_1.data_register, X[0], X[1], sprt_1.offset, sprt_1.active);
-            while (state != running || pause_game == TRUE) {
-            }; /*pausar thread enquanto o estado do jogo for diferente de 1(em jogo) ou variável pause game for acionada(botao)*/
-            int di = pegar_direcao_pac();
-            pacman_altera_posicao(pac, di, mapa2);
-            pacman_movimenta(pac, mapa2);
+            accelerometer_x_read(XYZ, regs); // lê os dados dos eixos x e y
+
+            printf("X: %d, Y: %d, Z: %d\n", XYZ[0], XYZ[1], XYZ[2]);
+            if (XYZ[0] > 20) {
+                direcao = 1;
+                if (mapa2[(pac->x) + 1][pac->y] < 9) { //caso não seja parede, altere a direcao
+                    pac->direcao = direcao;
+                }
+                if (mapa2[(pac->x)][(pac->y) + 1] < 9) {
+                    pac->x_anterior = pac->x;
+                    pac->y_anterior = pac->y;
+
+                    pac->x_futuro = pac->x;
+                    pac->y_futuro = pac->y + 2;
+
+
+                    //pontua_verif(pac, mapa2);
+                    if (mapa2[pac->x_futuro][pac->y_futuro] == 2) {
+                        mapa2[pac->x_anterior][pac->y_anterior] = 0; /*atualiza o valor da posicao anterior de pac caso ele pontue*/
+                        pac->pontos += 10;
+                    }
+
+                    //posicionar_pacman(((pac->x)), (pac->y + 1), mapa2);
+                    //pac->x = pac->x;
+                    pac->y += 1;
+                    mapa2[pac->x][pac->y-1] = 6;                                                      
+                    desenhar_sprite(1, 1 + ((pac->y) * 3) * 8, ((pac->x) * 3) * 8, 0, 1); 
+                    
+                    pacman_desenha(pac, mapa2);
+
+                } else {
+                    pac->direcao = 0;
+                }
+
+            } else if (XYZ[0] < -20) {
+                direcao = 2;
+                if (mapa2[(pac->x) - 1][pac->y] < 9) {
+                    pac->direcao = direcao;
+                }
+                if (mapa2[(pac->x)][(pac->y) - 1] < 9) {
+                    pac->x_anterior = pac->x;
+                    pac->y_anterior = pac->y;
+
+                    pac->x_futuro = pac->x;
+                    pac->y_futuro = pac->y - 2;
+
+                    pontua_verif(pac, mapa2);
+                    pacman_desenha(pac, mapa2);
+
+                    posicionar_pacman(((pac->x)), (pac->y - 1), mapa2);
+                } else {
+                    pac->direcao = 0;
+                }
+
+            } else if (XYZ[1] > 20) {
+                direcao = 4;
+                if (mapa2[(pac->x)][pac->y + 1] < 9) {
+                    pac->direcao = direcao;
+                }
+                if (mapa2[(pac->x) - 1][pac->y] < 9) {
+                    pac->x_anterior = pac->x;
+                    pac->y_anterior = pac->y;
+
+                    pac->x_futuro = pac->x - 2;
+                    pac->y_futuro = pac->y;
+
+                    pontua_verif(pac, mapa2);
+                    pacman_desenha(pac, mapa2); //nos casos em que há uma subtração de linha ou coluna na matriz é necessario que haja uma mudança na ordem das funções para que a animação ocorra com fluidez
+                                                
+                    posicionar_pacman(((pac->x) - 1), (pac->y), mapa2);
+                } else {
+                    pac->direcao = 0;
+                }
+            } else if (XYZ[1] < -20) {
+                direcao = 3;
+                if (mapa2[(pac->x)][pac->y - 1] < 9) {
+                    pac->direcao = direcao;
+                }
+                if (mapa2[(pac->x) + 1][pac->y] < 9) {
+                    pac->x_anterior = pac->x;
+                    pac->y_anterior = pac->y;
+
+                    pac->x_futuro = pac->x + 2;
+                    pac->y_futuro = pac->y;
+
+                    pontua_verif(pac, mapa2);
+                    posicionar_pacman(((pac->x) + 1), (pac->y), mapa2);
+                    pacman_desenha(pac, mapa2);
+
+                } else {
+                    pac->direcao = 0;
+                }
+            } else {
+                direcao = 0;
+                pac->direcao = direcao;
+                pac->x_futuro = pac->x;
+                pac->y_futuro = pac->y;
+
+                pontua_verif(pac, mapa2);
+                posicionar_pacman(((pac->x)), (pac->y), mapa2);
+            }
+
+            //Onde colocar essa verificação?
+            if (pac->vivo == 0)
+                return;
+
+            //Aqui tá no lugar certo?
+            mapa2[(pac->x_anterior)][pac->y_anterior] = 0;
+
+            //pacman_movimenta(pac, mapa2);
         }
     }
 }
@@ -1030,8 +1130,8 @@ void *player_2(void *args) {
         mouse_movement(&action, &power_amount);
 
         dj = pegar_direcao_phant();
-        printf("X: %d, Y: %d, dir: %d\n", pos_x, pos_y, ph->direcao);
-        // printf("X: %d, Y: %d\n", pos_x, pos_y);
+        printf("XYZ: %d, Y: %d, dir: %d\n", pos_x, pos_y, ph->direcao);
+        // printf("XYZ: %d, Y: %d\n", pos_x, pos_y);
         phantom_altera_direcao(ph, dj, mapa3);
         phantom_movimenta(ph, mapa3);
         phantom_desenha(ph, mapa3);
