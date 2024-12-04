@@ -19,6 +19,8 @@ void clear_sprites();
 void escreverPressionePB(int corP,int corR,int corE,int corS,int corI,int corO,int corN,int corB,int corA,int corJ,int corG,int posX, int posY,int tamanho);
 void escreverPause(int corP,int corA,int corU,int corS,int corE,int posX, int posY,int tamanho);
 void escrever_GameOver(int corG,int corA,int corM,int corE,int corO,int corV,int corR,int posX, int posY,int tamanho);
+void animacao_inicial();
+void escrever_Menu(int corI, int corN, int corC, int corA, int corR, int corE, int pos_x, int pos_y);
 void escrever_PacMan(int corP, int corA, int corC, int corHifen, int corM, int corN, int posX, int posY, int espacamento, int tamanho);
 void escrever_Phantom(int corP, int corH, int corA, int corN, int corT, int corO, int corM, int posX, int posY, int espacamento, int tamanho);
 void escrever_Wins(int corW, int corI, int corN, int corS,int corExclamacao, int posX, int posY,int espacamento, int tamanho);
