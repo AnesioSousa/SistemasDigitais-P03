@@ -1,10 +1,19 @@
 <div align="center"><img src="https://c4.wallpaperflare.com/wallpaper/459/983/696/pac-man-peach-retro-games-hd-wallpaper-preview.jpg"></div>
-
+<h1 align="center">PacMan</h3>
+<h3 align="center">Utilização do processador gráfico CoLenda no desenvolvimento de jogos 2D</h3>
+<p align="center">Game viciante que desde os anos 80 gera tantas emoções em players ao redor do mundo. PAC-MAN é um de arcade clássico que evoluiu significativamente desde sua apresentação à comunidade em 1980 pela Namco. As diretivas do game são simples, porém super engajadoras. O jogador controla o PAC-MAN, navegando ele através de um labirinto e enquanto anda o PAC-MAN vai consumindo pellets e a pontuação vai aumentando conforme a quantidade consumida por ele. O jogador deve sempre lembrar de evitar contato com os fantasmas coloridos.
+<div align="center">
 <br>
 
-# 🟦🟩🟥🟨 PacMan 🟩🟨🟥🟦
 
-Biblioteca com funções gráficas para o Processador Gráfico CoLenda, que permitem facilitar a implementação de jogos digitais para a plataforma DE1-SOC.
+
+
+
+<div align="center">
+	
+[Sobre o projeto](#sobre-o-projeto) • [Instalação](#instalação) • [Solução geral](#solução-geral) • [O jogo](#o-jogo) • [Testes](#testes)
+
+</div>
 
 # Equipe de desenvolvimento
 [Anesio Sousa](https://github.com/AnesioSousa)
@@ -13,9 +22,9 @@ Biblioteca com funções gráficas para o Processador Gráfico CoLenda, que perm
 
 [Caike Dylon](https://github.com/Ckdylon)
 
-# Sobre o projeto
+## Sobre o projeto
 
-PAC-MAN é um de arcade clássico que evoluiu significativamente desde sua apresentação à comunidade em 1980 pela Namco. As diretivas do game são simples, porém super engajadoras. O jogador controla o PAC-MAN, navegando ele através de um labirinto e enquanto anda o PAC-MAN vai consumindo pellets e a pontuação vai aumentando conforme a quantidade consumida por ele. O jogador deve sempre lembrar de evitar contato com os fantasmas coloridos.
+
 
 # A mecânica do game 
 **Objetivo:** O objetivo principal do jogo é consumir todas as pellets no labirinto enquando se evita ser pego pelos fantasmas. Comer as pellets maiores (chamadas de pellets do poder) faz com que o PAC-MAN temporariamente vire o jogo contra os fantastasmas, o tornando invulnerável e destruindo qualquer fastasma que o tocar.
