@@ -34,6 +34,19 @@ O HPS contém um processador ARM Cortex A9 dual-core, encarregado de executar o 
 
 O sistema operacional utilizado é o Linux, e o desenvolvimento de software foi realizado com o uso das linguagens C e assembly, utilizando um editor de código que permite trabalhar com várias linguagens.
 
+
+# Sobre os mapas
+
+O jogo possui três mapas declarados globalmente como matrizes 15x20 e cada um possui uma funcionalidade específica.
+
+O mapa 1 é uma matriz editável, inicialmente definida pelos valores 0 e 1. Ela tem por objetivo destacar quais coordenadas serão exibidas como paredes ou caminhos. Ela é utilizada como base para as outras 2 matrizes e referenciada de maneira puramente visual no decorrer do jogo.
+
+O mapa 2 por sua vez, representa o mapa 1 invertido e com seus valores modificados para fins de exibição e controle. Sempre que o jogo é iniciado, o mapa 2 terá as coordenadas correspondetes aos caminhos preenchidos com valores que representem os pontos, enquanto as coordenadas correspondetes as paredes terão valor 9. A escolha do valor 9 tem relação com o funcionamento da função ler_matriz presente na gpu_lib, esta função é capaz de identificar os valores de uma matriz e traduzi-los como quadrados de cores definidas por números de 0 a 7, sendo assim, ao substituir os valores das paredes por 9 é possível sobrepor o mapa 1 sem comprometimento estético. Outro detalhe importante é que apesar de idênticos em proporção, os mapas 1 e 2 não são exibidos nas mesmas escalas. Ao utilizar a função ler_matriz é possível selecionar o espaçamento entre as coordenadas,deslocamento nos eixos X e Y e o tamanho dos quadrados que as representarão, neste jogo, o mapa 1 possui espaçamento 3 e tamanho 3 enquanto o mapa 2 possui espaçamento 3, tamanho 1, e deslocamento 1 para ambos os eixos. Essa foi a estratégia utilizada para centralizar e sobrepor as matrizes de forma a manter a maior semelhança possível com o jogo original.
+
+Uma outra responsabilidade atribuída ao mapa 2 é permitir os movimentos do jogador 1 (PAC-MAN), permitindo que haja o tratamento das colisões jogador-parede e jogador-pontuação.
+
+O mapa 3 é inicializado como uma cópia do mapa 2, e de maneira análoga a este, é responsável por permitir os movimentos do jogador 2 (PHANTOM). Como as condições de vitória dos jogadores são distintas, é fato que o jogador que controlar o fantasma não tem a necessidade de obter os pontos distribuídos pelo chão, logo, o mapa 3 ao contrário dos outros 2 mapas, não é exibido.Porém, ainda possui a responsabilidade de controlar e atualizar os movimentos de PHANTOM.   
+
 # Mapeamento de Memoria 
 Para possibilitar o acesso ao acelerômetro (ADXL345) presente na placa DE1-SOC, é necessário mapear a memória física para o espaço de endereçamento virtual. Esse processo envolve duas etapas principais.
 
