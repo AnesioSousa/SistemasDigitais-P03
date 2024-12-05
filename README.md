@@ -5,9 +5,11 @@
 <div align="center">
 <br>
 
-![GitHub contributors](https://img.shields.io/github/contributors/AnesioSousa/SistemasDigitais-P03
-![GitHub Issues or Pull Requests](https://img.shields.io/github/issues-pr/AnesioSousa/SistemasDigitais-P03
-![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/AnesioSousa/SistemasDigitais-P03
+![GitHub contributors](https://img.shields.io/github/contributors/AnesioSousa/SistemasDigitais-P03)
+
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues-pr/AnesioSousa/SistemasDigitais-P03)
+
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/AnesioSousa/SistemasDigitais-P03)
 
 
 <div align="center">
