@@ -16,6 +16,7 @@
 #define SIZE1 15
 #define TRUE 1
 #define FALSE 0
+#define COLLISION_THRESHOLD 2
 
 typedef enum {
     running = 1,
@@ -140,18 +141,28 @@ char pontuacao_matriz[5][36];
 
 
 void* colision_routine(void* args){
-  //invisible_sprite
-  while (state != finish)
-  {
+  // invisible_sprite
+  while (state != finish) {
     pthread_mutex_lock(&colision_mutex);
-    while(pause_colision || state == in_pause || state == in_menu || state == win || state == lose){
+    while (pause_colision) {
       pthread_cond_wait(&colision_cond, &colision_mutex);
     }
     pthread_mutex_unlock(&colision_mutex);
-    if(state == finish) {
+
+    if (state == finish) {
       return NULL;
     }
-  } 
+    if (state == running && pac && ph) {
+      // Use COLLISION_THRESHOLD to detect collision on both x and y
+      if ( (pac->x - COLLISION_THRESHOLD < ph->x && pac->x + COLLISION_THRESHOLD > ph->x) && 
+          (pac->y - COLLISION_THRESHOLD < ph->y && pac->y + COLLISION_THRESHOLD > ph->y) ) {
+
+        pac->vivo = 0;
+        encerrar_jogo();
+        menu();
+     }
+    }
+  }
 }
 
 void pause_threads(){
@@ -190,10 +201,9 @@ void init_game(){
     clear_poligonos();
     printf("Init\n");
     clear_sprites();
-    setar_cor_pixel_sprite(1, 1, 1, 1);
+    setar_cor_pixel_sprite();
     limpar_tela();
     restart_threads();
-    
     //matriz de mapa/fundo
     mudar_cor_generico(SIZE1, SIZE2, map, 3);
     ler_matriz(SIZE1, SIZE2, map, 3, 0, 0, 3);
@@ -204,23 +214,26 @@ void init_game(){
 
     copiar_matriz(SIZE1, SIZE2, mapa3, mapa2);          //criei essa matriz que é uma copia da matriz de controle para controlar o fantasma sem interferir na matriz de controle que será exibida
                                                         //essa terceira matriz nao interfere na condição de vitoria do fantasma uma vez que ela se baseia nas cordenadas dentro da struct
-    MAX_POINTS = count_max_points(SIZE1, SIZE2, mapa2); //define a condição de vitoria de pac
-    MAX_POINTS -= 10;                                   // primeira posicao que pacman ocupa ao iniciar o jogo nao é contabilizada
-                                                        //  logo é necessário considerar essa diferenca ao tratar de sua condição de vitória
                                                         
     mudar_cor_generico(SIZE1, SIZE2, mapa2, 2);
     mudar_cor_fundo(SIZE1, SIZE2, mapa2, 9);
+    
+    MAX_POINTS = count_max_points(SIZE1, SIZE2, mapa2); //define a condição de vitoria de pac
+                                                        // primeira posicao que pacman ocupa ao iniciar o jogo nao é contabilizada
+                                                        //  logo é necessário considerar essa diferenca ao tratar de sua condição de vitória
+
+
     ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
 
     state = running;
-
+    /*
     pac = pacman_create(1, 1);
     posicionar_pacman(1, 1, mapa2);
 
     ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
 
     ph = phantom_create(13, 18);
-    posicionar_phantom(13, 18, mapa3);
+    posicionar_phantom(13, 18, mapa3);*/
     // teste de game_over
     /*
         pacman_altera_posicao(pac, 1, mapa2);
@@ -269,7 +282,7 @@ usleep(800000);
 
 
 void pausar_game() {
-  //limpar_tela();
+  limpar_tela();
   pause_threads();  
   escreverPause(1, 1, 1, 1, 1, 14, 25, 2);
   ler_matriz(SIZE1, SIZE2, map, 3, 0, 0, 3);
@@ -278,6 +291,8 @@ void pausar_game() {
 }
 
 void menu() {
+    clear_sprites();
+    clear_poligonos();
     state = in_menu;
     char btn_pressed;
     while(state != finish) {
@@ -299,13 +314,19 @@ void menu() {
             //return_screen();
         //ENCERRAR
         } else if (BUTTON == 3) {
-            printf("Encerrou\n");
-            encerrar_jogo();
-        } else if (BUTTON == 4) {
+          state = finish;
+          limpar_tela();
+          clear_sprites();
+          escrever_GameOver(1, 1, 1, 1, 1, 1, 1, 14, 25, 2); /*provisorio*/
+          sleep(3);
+          limpar_tela();
+          } else if (BUTTON == 4) {
             state = in_menu;
-            printf("No Menu\n");
             limpar_tela();
             clear_sprites();
+            clear_poligonos();
+            usleep(80000);
+            escrever_Menu(1, 1, 1, 1, 1, 10, 25, 2);
             pause_threads();
         } 
 
@@ -315,8 +336,13 @@ void menu() {
 
 int main() {
     pause_accel = 0;
+    pause_colision = 0;
 
     mapear_gpu();
+    limpar_tela();
+    clear_sprites();
+    clear_poligonos();
+    //animacao_inicial();
 
     inicializacao_accel();
     if (!open_mouse_device()) {
@@ -339,7 +365,7 @@ int main() {
     pthread_cond_init(&colision_cond, NULL);
 
     pthread_create(&thread_player_1, NULL, player_1, NULL);
-    //pthread_create(&thread_player_2, NULL, player_2, NULL);
+    pthread_create(&thread_player_2, NULL, player_2, NULL);
     pthread_create(&colision_thread, NULL, colision_routine, NULL);
     pthread_create(&thread_button, NULL, buttons_thread, NULL);
     //pthread_create(&text_pac, NULL, pac_text_thread, NULL);
@@ -391,18 +417,21 @@ int main() {
 // FUNCOES JOGO
 
 void encerrar_jogo() { /*por enquanto nao diferencia quem ganhou*/
-    state = finish;
+    //state = finish;
     printf("entrou\n");
     if (pac->vivo == 0) { /*phantom ganhou*/
         clear_poligonos();
         clear_sprites();
         limpar_tela();
         escrever_PhantomWins(4, 10, 2, 2);
+        usleep(8000);
+        state = in_menu;
     } else if (pac->vivo == 1 && pac->pontos == MAX_POINTS) { /*pacman ganhou e atingiu o máximo de pontos*/
         clear_poligonos();
         clear_sprites();
         limpar_tela();
         escrever_PacWins(4, 10, 2, 2);
+        sleep(3);
     } else { /*essa funcao é um teste e provavelmente será retirada antes da entrega, mas se a tela de game over aparecer
                provavelmente os pontos não estão sendo contados corretamente
            */
@@ -429,8 +458,46 @@ int pegar_direcao_pac() { //no momento retorna somente o X
     printf("%d \n", XYZ[1]);
     return direcao;
 }
+int pegar_direcao_phant() {
+    int di = 0;
 
-int pegar_direcao_phant() { /*no momento retorna somente o X*/
+    // If left button is pressed and mouse is dragged
+    if (left == 1) {
+        // Check if direction has changed (reset flag)
+        if (direction_changed == 1) {
+            // Reset previous positions when direction changes
+            prev_pos_x = pos_x;
+            prev_pos_y = pos_y;
+            direction_changed = 0;
+        }
+
+        // Dragging to the right
+        if (pos_x > prev_pos_x && abs(pos_y - prev_pos_y) < 30) {
+            di = 1;  // Right
+        }
+        // Dragging to the left
+        else if (pos_x < prev_pos_x && abs(pos_y - prev_pos_y) < 30) {
+            di = 2;  // Left
+        }
+        // Dragging upwards
+        else if (pos_y < prev_pos_y && abs(pos_x - prev_pos_x) < 30) {
+            di = 4;  // Up
+        }
+        // Dragging downwards
+        else if (pos_y > prev_pos_y && abs(pos_x - prev_pos_x) < 30) {
+            di = 3;  // Down
+        }
+
+        // If direction has changed, reset the movement
+        if (di != 0) {
+            direction_changed = 1;  // Mark that the direction has changed
+        }
+    }
+
+    return di;
+}
+/*
+int pegar_direcao_phant() { //no momento retorna somente o X
     int direcao;
     if (pos_x == 20) {
         direcao = 1;
@@ -444,7 +511,7 @@ int pegar_direcao_phant() { /*no momento retorna somente o X*/
         direcao = 0;
     printf("pos_x = %d, posy = %d \n, direcao = %d", pos_x, pos_y, ph->direcao);
     return direcao;
-}
+}*/
 
 void desenhar_jogo(char mapa2[SIZE1][SIZE2]) { /*por enquanto sem implementação de sprites*/
     int direcao1 = pegar_direcao_pac();
@@ -477,7 +544,7 @@ int count_max_points(int size1, int size2, char map[size1][size2]) { /*funcao qu
     int i, j, count;
     for (i = 0; i < size1; i++) {
         for (j = 0; j < size2; j++) {
-            if (map[i][j] == 1) {
+            if (map[i][j] == 2) {
                 count++;
             }
         }
@@ -524,7 +591,7 @@ void posicionar_pacman(int x, int y, char mapa2[SIZE1][SIZE2]) {
     pac->x = x;
     pac->y = y;
     mapa2[x][y] = 6;                                                      /*Numero que representa o pacman na matriz de controle(mapa2)*/
-    desenhar_sprite(1, 1 + ((pac->y) * 3) * 8, ((pac->x) * 3) * 8, 0, 1); /* A forma com que os sprites sao posicionados se assemelha muito com a forma que a função desenhar_quadrado
+    desenhar_sprite(1, 1 + ((pac->y) * 3) * 8, ((pac->x) * 3) * 8, 6, 1); /* A forma com que os sprites sao posicionados se assemelha muito com a forma que a função desenhar_quadrado
                                                                              é implementada na gpu_lib, faz-se necessário que o espaçamento de um quadrado para outro(para este jogo o valor é 3) seja respeitado
                                                                              e também e preciso que haja uma compensação tanto para o deslocamento utilizado para centralizar o sprite(+1) quanto para manter um
                                                                              deslocamento proporcional(*8)
@@ -676,7 +743,7 @@ void pacman_desenha(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*funcao responsave
                 // desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->y_anterior + 1) * 3, 7, 0, 7, 1);
                 usleep(80000);
                 // desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->y_anterior + 1) * 3, 0, 0, 0, 1);
-                desenhar_sprite(1, ((i + 1) + (pac->y_anterior + 1) * 3) * 8, (((pac->x) * 3) + 1) * 8 - 7, 1, 1);
+                desenhar_sprite(1, ((i + 1) + (pac->y_anterior + 1) * 3) * 8, (((pac->x) * 3) + 1) * 8 - 7, 6, 1);
                 trocar_status(pac);
             }
         }
@@ -690,7 +757,7 @@ void pacman_desenha(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*funcao responsave
                 usleep(80000);
                 // desenhar_quadrado(((pac->x) * 3) + 1, (i + 1) + (pac->y_anterior - 1) * 3, 0, 0, 0, 1);
 
-                desenhar_sprite(1, ((i + 1) + (pac->y_anterior - 1) * 3) * 8, (((pac->x) * 3) + 1) * 8 - 7, 1, 1);
+                desenhar_sprite(1, ((i + 1) + (pac->y_anterior - 1) * 3) * 8, (((pac->x) * 3) + 1) * 8 - 7, 7, 1);
 
                 trocar_status(pac);
             }
@@ -705,7 +772,7 @@ void pacman_desenha(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*funcao responsave
                 usleep(80000);
                 // desenhar_quadrado((i + 1) + (pac->x_anterior + 1) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
 
-                desenhar_sprite(1, (((pac->y) * 3) + 1) * 8 - 7, ((i + 1) + (pac->x_anterior + 1) * 3) * 8, 1, 1);
+                desenhar_sprite(1, (((pac->y) * 3) + 1) * 8 - 7, ((i + 1) + (pac->x_anterior + 1) * 3) * 8, 5, 1);
                 trocar_status(pac);
             }
         }
@@ -719,7 +786,7 @@ void pacman_desenha(Pacman *pac, char mapa2[SIZE1][SIZE2]) { /*funcao responsave
                 usleep(80000);
                 // desenhar_quadrado((i + 1) + (pac->x_anterior - 1) * 3, ((pac->y) * 3) + 1, 0, 0, 0, 1);
 
-                desenhar_sprite(1, (((pac->y) * 3) + 1) * 8 - 7, ((i + 1) + (pac->x_anterior - 1) * 3) * 8, 1, 1);
+                desenhar_sprite(1, (((pac->y) * 3) + 1) * 8 - 7, ((i + 1) + (pac->x_anterior - 1) * 3) * 8, 4, 1);
                 trocar_status(pac);
             }
         }
@@ -993,7 +1060,6 @@ void inicializacao_accel() {
 
 void *player_1(void *args) {
   pac = pacman_create(1, 1);
-  posicionar_pacman(1, 1, mapa2);
   int direcao;
 
     while ( state != finish ) {
@@ -1004,10 +1070,10 @@ void *player_1(void *args) {
         }
         pthread_mutex_unlock(&player_1_mutex);
 
-        if (accelerometer_is_data_ready(regs)) {
+        if (accelerometer_is_data_ready(regs) && state == running) {
             accelerometer_x_read(XYZ, regs); // lê os dados dos eixos x e y
 
-            printf("X: %d, Y: %d, Z: %d\n", XYZ[0], XYZ[1], XYZ[2]);
+            //printf("X: %d, Y: %d, Z: %d\n", XYZ[0], XYZ[1], XYZ[2]);
             if (XYZ[0] > 20) {
                 direcao = 1;
                 if (mapa2[(pac->x) + 1][pac->y] < 9) { //caso não seja parede, altere a direcao
@@ -1020,20 +1086,19 @@ void *player_1(void *args) {
                     pac->x_futuro = pac->x;
                     pac->y_futuro = pac->y + 2;
 
-
-                    //pontua_verif(pac, mapa2);
+                    pontua_verif(pac, mapa2);
+                    /*Mesmo código de abaixo: 
                     if (mapa2[pac->x_futuro][pac->y_futuro] == 2) {
-                        mapa2[pac->x_anterior][pac->y_anterior] = 0; /*atualiza o valor da posicao anterior de pac caso ele pontue*/
+                        mapa2[pac->x_anterior][pac->y_anterior] = 0; //atualiza o valor da posicao anterior de pac caso ele pontue
                         pac->pontos += 10;
-                    }
-
-                    //posicionar_pacman(((pac->x)), (pac->y + 1), mapa2);
-                    //pac->x = pac->x;
-                    pac->y += 1;
-                    mapa2[pac->x][pac->y-1] = 6;                                                      
-                    desenhar_sprite(1, 1 + ((pac->y) * 3) * 8, ((pac->x) * 3) * 8, 0, 1); 
-                    
+                    }*/
+                    ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+                    exibir_pontuacao(pac->pontos, 5, 36, pontuacao_matriz);
                     pacman_desenha(pac, mapa2);
+  
+                    //posicionar_pacman(((pac->x) + 1), (pac->y), mapa2);
+                    pac->y += 1;
+                    mapa2[pac->x][pac->y-1] = 6;
 
                 } else {
                     pac->direcao = 0;
@@ -1052,6 +1117,8 @@ void *player_1(void *args) {
                     pac->y_futuro = pac->y - 2;
 
                     pontua_verif(pac, mapa2);
+                    ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+                    exibir_pontuacao(pac->pontos, 5, 36, pontuacao_matriz);
                     pacman_desenha(pac, mapa2);
 
                     posicionar_pacman(((pac->x)), (pac->y - 1), mapa2);
@@ -1073,6 +1140,8 @@ void *player_1(void *args) {
 
                     pontua_verif(pac, mapa2);
                     pacman_desenha(pac, mapa2); //nos casos em que há uma subtração de linha ou coluna na matriz é necessario que haja uma mudança na ordem das funções para que a animação ocorra com fluidez
+                    ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+                    exibir_pontuacao(pac->pontos, 5, 36, pontuacao_matriz);
                                                 
                     posicionar_pacman(((pac->x) - 1), (pac->y), mapa2);
                 } else {
@@ -1092,6 +1161,8 @@ void *player_1(void *args) {
 
                     pontua_verif(pac, mapa2);
                     posicionar_pacman(((pac->x) + 1), (pac->y), mapa2);
+                    ler_matriz(SIZE1, SIZE2, mapa2, 3, 1, 1, 1);
+                    exibir_pontuacao(pac->pontos, 5, 36, pontuacao_matriz);
                     pacman_desenha(pac, mapa2);
 
                 } else {
@@ -1120,21 +1191,24 @@ void *player_1(void *args) {
 }
 
 void *player_2(void *args) {
+    ph = phantom_create(13, 18);
+    posicionar_phantom(13, 18, mapa3);
     int dj;
     while (state != finish) {
         pthread_mutex_lock(&player_2_mutex);
-        while (state == in_pause || state == in_menu || state == win || state == lose) {
+        while (pause_mouse) {
             pthread_cond_wait(&player_2_cond, &player_2_mutex);
         }
         pthread_mutex_unlock(&player_2_mutex);
         mouse_movement(&action, &power_amount);
-
-        dj = pegar_direcao_phant();
-        printf("XYZ: %d, Y: %d, dir: %d\n", pos_x, pos_y, ph->direcao);
-        // printf("XYZ: %d, Y: %d\n", pos_x, pos_y);
-        phantom_altera_direcao(ph, dj, mapa3);
-        phantom_movimenta(ph, mapa3);
-        phantom_desenha(ph, mapa3);
+        if(state == running){
+          dj = pegar_direcao_phant();
+          //printf("XYZ: %d, Y: %d, dir: %d\n", pos_x, pos_y, ph->direcao);
+          // printf("XYZ: %d, Y: %d\n", pos_x, pos_y);
+          phantom_altera_direcao(ph, dj, mapa3);
+          phantom_movimenta(ph, mapa3);
+          phantom_desenha(ph, mapa3);
+        }
     }
 }
 
