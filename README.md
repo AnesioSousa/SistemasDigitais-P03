@@ -58,7 +58,7 @@ O mapa 3 é inicializado como uma cópia do mapa 2, e de maneira análoga a este
 
 Neste projeto existem três tipos principais de funções relacionadas a movimentação dos jogadores, as funções de: movimentar,posicionar e desenhar. Porém antes de destacar a importância e papel de cada uma, é imprescindível esclarecer alguns atributos dos jogadores.
 
-#Atributos essenciais aos jogadores
+Atributos essenciais aos jogadores
 Direção: É manipulada com valores em um intervalo de 0 a 4 sendo 0 = parado, 1 = direita, 2 = esquerda, 3 = para baixo e 4 = para cima. Estes valores são adaptados de acordo com o dispositivo de entrada utilizado(acelerômetro ou mouse).
 
 Passo: É um valor que para as proporções de espaçamento definidas no jogo se mantém fixo como 4 para ambos os jogadores e reflete no número de iterações necessárias para fazer a animação de deslocamento de um ponto a outro.
@@ -67,7 +67,7 @@ Vivo: No jogo original, após PAC-MAN ingerir uma certa quantidade de pastilhas 
 
 Xs e Ys: Apesar de possuírem suas respectivas matrizes, ambos os jogadores estão constantemente atualizando suas próprias posições com base nas direções tomadas. Além do X e Y que definem sua posição atual, os personagens também atualizam suas posições anteriores e futuras com base em sua direção. A implementação dessas variaveis permitiu maior facilidade ao lidar com colisões e animações.
 
-#Atualizando e movimentando jogadores
+Atualizando e movimentando jogadores
 
 Funções de posicionar: As funções posicionar_pacman e posicionar_phantom são curtas , contudo, utilizadas constantemente.As mesmas recebem como parâmetro as coordenadas X e Y para serem atualizadas pós movimentação e aproveitam dessa informação recém atualizada para posicionar o sprite correspondente ao personagem. Para posicionar o sprite devidamente é necessário considerar o espaçamento  e deslocamento dos blocos além de compensar o deslocamento do próprio sprite que por seu tamanho não se desloca de maneira proporcional a um background_block.
 
