@@ -75,6 +75,10 @@ Funções de movimentar: Estas que são as funções mais importantes no context
 
 Funções de desenhar: pacman_desenha e phantom_desenha se destacam em meio as outras funções uma vez que tanto por permitirem a exibição de animações entre as coordenadas - tornando o movimento no geral mais fluído - quanto por não serem possíveis sem a existência de informações adicionais. Para que seja possível executar a animação, o jogo necessita do número de passos a serem dados(quantidade de iterações), direção a ser tomada,valores necessários ao posicionamento do sprite(espaçamento entre blocos,compensação de sprite e offsetts X e Y) e coordenadas atuais e anteriores para que, dessa forma, seja possível traçar o movimento entre posições através de píxels específicos, uma vez que não é possível determinar subcoordenadas nas matrizes. 
 
+<details>
+<summary><b>Threads </b></summary>
+Também chamados de miniprocessos, as threads compartilham um conjunto de recursos, tal como o espaço de endereçamento, de maneira que possam trabalhar juntos intimamente para desempenhar alguma tarefa, precisamente o gerenciamento pseudoparalelo do acelerômetro e do mouse, na pausa e na exibição dos elementos passivos.
+	
 # Mapeamento de Memoria 
 Para possibilitar o acesso ao acelerômetro (ADXL345) presente na placa DE1-SOC, é necessário mapear a memória física para o espaço de endereçamento virtual. Esse processo envolve duas etapas principais.
 
