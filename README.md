@@ -86,7 +86,29 @@ Um mutex é bloqueado antes de verificar uma variável compartilhada. Dependendo
 Utilizado para sincronização, permitindo que uma thread espere até que uma condição seja sinalizada por outra thread.
 pthread_cond_wait: Faz a thread esperar por uma condição específica. Ela libera o mutex enquanto espera, permitindo que outras threads sinalizem a condição.
 pthread_cond_signal: Acorda uma thread que está esperando na condição.
-	
+
+# Fluxo de uso da API pthread no game
+<div align="left">
+	     <ol>
+	<li>
+		Um pacman é criado e posicionado no mapa.
+	</li>
+	<li>
+		Enquanto o estado do jogo não é de encerramento, na linha execução pseudo-paralela é verificada se o acelerômetro está pronto para leitura.
+	</li>
+ <li>
+		Dados do acelerômetro são lidos para determinar a direção de movimento do pacman.
+	</li>
+ <li>
+		Movimentos e interações do pacman no mapa são calculados com base na direção detectada.
+	</li>
+ <li>
+		Mutexes e condicionais garantem que mudanças em variáveis globais sejam respeitadas e tratadas com sincronização.
+	</li>
+ 
+</ol>
+</div>
+
 # Mapeamento de Memoria 
 Para possibilitar o acesso ao acelerômetro (ADXL345) presente na placa DE1-SOC, é necessário mapear a memória física para o espaço de endereçamento virtual. Esse processo envolve duas etapas principais.
 
