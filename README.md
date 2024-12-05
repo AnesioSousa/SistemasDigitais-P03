@@ -87,7 +87,7 @@ Utilizado para sincronização, permitindo que uma thread espere até que uma co
 pthread_cond_wait: Faz a thread esperar por uma condição específica. Ela libera o mutex enquanto espera, permitindo que outras threads sinalizem a condição.
 pthread_cond_signal: Acorda uma thread que está esperando na condição.
 
-# Fluxo de uso da API pthread no game
+# Exemplo de utilização da API pthread no projeto
 <div align="left">
 	     <ol>
 	<li>
