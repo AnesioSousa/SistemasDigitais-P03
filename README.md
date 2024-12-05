@@ -4,20 +4,15 @@
 <p align="center">Game viciante que desde os anos 80 gera tantas emoções em players ao redor do mundo. PAC-MAN é um de arcade clássico que evoluiu significativamente desde sua apresentação à comunidade em 1980 pela Namco. As diretivas do game são simples, porém super engajadoras. O jogador controla o PAC-MAN, navegando ele através de um labirinto e enquanto anda o PAC-MAN vai consumindo pellets e a pontuação vai aumentando conforme a quantidade consumida por ele. O jogador deve sempre lembrar de evitar contato com os fantasmas coloridos.
 <div align="center">
 <br>
-
-![GitHub contributors](https://img.shields.io/github/contributors/AnesioSousa/SistemasDigitais-P03)
-
-![GitHub Issues or Pull Requests](https://img.shields.io/github/issues-pr/AnesioSousa/SistemasDigitais-P03)
-
-![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/AnesioSousa/SistemasDigitais-P03)
-
-
 <div align="center">
+</div>
+<br>
+	
+![GitHub contributors](https://img.shields.io/github/contributors/AnesioSousa/SistemasDigitais-P03)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues-pr/AnesioSousa/SistemasDigitais-P03)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/AnesioSousa/SistemasDigitais-P03)
 	
 [Sobre o projeto](#sobre-o-projeto) • [Instalação](#instalação) • [Solução geral](#solução-geral) • [O jogo](#o-jogo) • [Testes](#testes)
-
-</div>
-
 # Equipe de desenvolvimento
 [Anesio Sousa](https://github.com/AnesioSousa)
 
