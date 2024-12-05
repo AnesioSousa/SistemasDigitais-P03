@@ -158,6 +158,10 @@ Além disso, o sistema possui um co-processador especializado em desenhar políg
 # Desenvolvimento
 O projeto foi dividido em módulos para um melhor desenvolvimento. Sendo os modulo um com jogo Pac-Man, acelerômetro, biblioteca em assembly e algumas funções extras.
 
+## Criação de Sprites
+A criação de bitmaps para novos sprites é realizada por meio de um algoritmo em Python que utiliza a biblioteca Pillow. O processo envolve a leitura da imagem e sua conversão em uma matriz de valores, contendo as coordenadas dos pixels, as cores RGB e o fator de opacidade. O fator de opacidade é usado para identificar pixels invisíveis, permitindo substituir sua cor pelo padrão de transparência da GPU. Além disso, as cores são convertidas para um formato de 3 bits, correspondente ao padrão de cores utilizado pela GPU.
+Ao final do processo, é gerado um arquivo de texto contendo o código necessário para a geração do sprite na GPU, que pode ser facilmente copiado e utilizado em arquivos C. A biblioteca CoLenda foi atualizada para incluir suporte a essa funcionalidade, introduzindo uma nova pseudo-instrução que simplifica a criação de sprites. Essa instrução recebe um vetor de 400 posições, correspondente aos 400 pixels de um sprite, e realiza a leitura do vetor, fazendo chamadas à função set_pixel para definir cada pixel individualmente.
+
 ## Acelerometro
 Nesse modulo a implementação de comunicação I2C para um acelerômetro (ADXL345), onde o código acessa o dispositivo através do /dev/mem e manipula os registradores diretamente. 
 
