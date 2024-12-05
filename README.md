@@ -54,6 +54,27 @@ Uma outra responsabilidade atribuída ao mapa 2 é permitir os movimentos do jog
 
 O mapa 3 é inicializado como uma cópia do mapa 2, e de maneira análoga a este, é responsável por permitir os movimentos do jogador 2 (PHANTOM). Como as condições de vitória dos jogadores são distintas, é fato que o jogador que controlar o fantasma não tem a necessidade de obter os pontos distribuídos pelo chão, logo, o mapa 3 ao contrário dos outros 2 mapas, não é exibido.Porém, ainda possui a responsabilidade de controlar e atualizar os movimentos de PHANTOM.   
 
+## Funções de movimento
+
+Neste projeto existem três tipos principais de funções relacionadas a movimentação dos jogadores, as funções de: movimentar,posicionar e desenhar. Porém antes de destacar a importância e papel de cada uma, é imprescindível esclarecer alguns atributos dos jogadores.
+
+#Atributos essenciais aos jogadores
+Direção: É manipulada com valores em um intervalo de 0 a 4 sendo 0 = parado, 1 = direita, 2 = esquerda, 3 = para baixo e 4 = para cima. Estes valores são adaptados de acordo com o dispositivo de entrada utilizado(acelerômetro ou mouse).
+
+Passo: É um valor que para as proporções de espaçamento definidas no jogo se mantém fixo como 4 para ambos os jogadores e reflete no número de iterações necessárias para fazer a animação de deslocamento de um ponto a outro.
+
+Vivo: No jogo original, após PAC-MAN ingerir uma certa quantidade de pastilhas ele adquire temporariamente a habilidade de derrotar seus inimigos fantasmas. Para essa adaptação essa habilidade não foi incluída, logo , o atributo Vivo é essencial exclusivamente ao PAC-MAN uma vez que interfere indiretamente com sua movimentação uma vez que é necessário garantir que o mesmo continue vivo para se locomover.
+
+Xs e Ys: Apesar de possuírem suas respectivas matrizes, ambos os jogadores estão constantemente atualizando suas próprias posições com base nas direções tomadas. Além do X e Y que definem sua posição atual, os personagens também atualizam suas posições anteriores e futuras com base em sua direção. A implementação dessas variaveis permitiu maior facilidade ao lidar com colisões e animações.
+
+#Atualizando e movimentando jogadores
+
+Funções de posicionar: As funções posicionar_pacman e posicionar_phantom são curtas , contudo, utilizadas constantemente.As mesmas recebem como parâmetro as coordenadas X e Y para serem atualizadas pós movimentação e aproveitam dessa informação recém atualizada para posicionar o sprite correspondente ao personagem. Para posicionar o sprite devidamente é necessário considerar o espaçamento  e deslocamento dos blocos além de compensar o deslocamento do próprio sprite que por seu tamanho não se desloca de maneira proporcional a um background_block.
+
+Funções de movimentar: Estas que são as funções mais importantes no contexto de visualização de deslocamento de sprites. São chamadas considerando que houve uma atualização na variável de direção e são responsáveis por acionar as funções de animação e posicionamento internamente, além de atualizar as variaveis X e Y futuras e anteriores com base na direção tomada.Também possibilitam mudança de direção para 0(parado) caso haja colisão com parede.
+
+Funções de desenhar: pacman_desenha e phantom_desenha se destacam em meio as outras funções uma vez que tanto por permitirem a exibição de animações entre as coordenadas - tornando o movimento no geral mais fluído - quanto por não serem possíveis sem a existência de informações adicionais. Para que seja possível executar a animação, o jogo necessita do número de passos a serem dados(quantidade de iterações), direção a ser tomada,valores necessários ao posicionamento do sprite(espaçamento entre blocos,compensação de sprite e offsetts X e Y) e coordenadas atuais e anteriores para que, dessa forma, seja possível traçar o movimento entre posições através de píxels específicos, uma vez que não é possível determinar subcoordenadas nas matrizes. 
+
 # Mapeamento de Memoria 
 Para possibilitar o acesso ao acelerômetro (ADXL345) presente na placa DE1-SOC, é necessário mapear a memória física para o espaço de endereçamento virtual. Esse processo envolve duas etapas principais.
 
