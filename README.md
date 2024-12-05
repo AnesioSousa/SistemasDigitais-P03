@@ -77,6 +77,15 @@ Funções de desenhar: pacman_desenha e phantom_desenha se destacam em meio as o
 
 # Threads
 Também chamados de miniprocessos, as threads compartilham um conjunto de recursos, tal como o espaço de endereçamento, de maneira que possam trabalhar juntos intimamente para desempenhar alguma tarefa, precisamente o gerenciamento pseudoparalelo do acelerômetro e do mouse, na pausa e na exibição dos elementos passivos.
+
+# Mutexes (pthread_mutex_lock e pthread_mutex_unlock)
+Usados para garantir exclusão mútua, evitando que múltiplas threads acessem recursos críticos simultaneamente.
+Um mutex é bloqueado antes de verificar uma variável compartilhada. Dependendo do valor da variável, uma thread poode esperar por uma condição (através de pthread_cond_wait). Quando outra thread sinaliza a condição, o mutex é liberado e a execução continua.
+
+# Condicional (pthread_cond_wait e pthread_cond_signal)
+Utilizado para sincronização, permitindo que uma thread espere até que uma condição seja sinalizada por outra thread.
+pthread_cond_wait: Faz a thread esperar por uma condição específica. Ela libera o mutex enquanto espera, permitindo que outras threads sinalizem a condição.
+pthread_cond_signal: Acorda uma thread que está esperando na condição.
 	
 # Mapeamento de Memoria 
 Para possibilitar o acesso ao acelerômetro (ADXL345) presente na placa DE1-SOC, é necessário mapear a memória física para o espaço de endereçamento virtual. Esse processo envolve duas etapas principais.
